@@ -1,4 +1,4 @@
-﻿Imports System.Data.SqlClient
+Imports System.Data.SqlClient
 Imports System.IO
 
 Public Class Utentes
@@ -33,256 +33,188 @@ Public Class Utentes
         Public ultimaEntrega As Date = Nothing
     End Class
 
+    ' Formats a date as yyyy-MM-dd, falling back to 1900-01-01 for empty dates.
+    Private Shared Function DateOrDefault(ByVal d As Date) As String
+        Dim s As String = Format(d, "yyyy-MM-dd")
+        If s = String.Empty Then s = "1900-01-01"
+        Return s
+    End Function
+
     Public Function AddUtente(ByVal Utentes As UtentesObj, ByRef Message As String) As Boolean
 
         Try
+            Dim sql As String = "INSERT INTO Utentes VALUES (@codUtente, @nome, @morada, @complemento, @autorizado, @telefone, @telemovel, @nif, @ss, @id, @dataNasc, @dataEntrada, @ativo, @codFamilia, @utilizador, @dtCriacao, @hrCriacao, @obs, @foto, @pais, @estCivil, @sexo, @fotoAut, @receita, @despesa, @codPostal, @dataSaida, @ultimaEntrega)"
 
-            strInstruction = "INSERT INTO Utentes VALUES (@codUtente, @nome, @morada, @complemento, @autorizado, @telefone, @telemovel, @nif, @ss, @id, @dataNasc, @dataEntrada, @ativo, @codFamilia, @utilizador, @dtCriacao, @hrCriacao, @obs, @foto, @pais, @estCivil, @sexo, @fotoAut, @receita, @despesa, @codPostal, @dataSaida, @ultimaEntrega)"
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
-            objCommand.Parameters.Clear()
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
+                    cmd.Parameters.AddWithValue("@nome", Utentes.nome)
+                    cmd.Parameters.AddWithValue("@morada", Utentes.morada)
+                    cmd.Parameters.AddWithValue("@complemento", Utentes.complemento)
+                    cmd.Parameters.AddWithValue("@autorizado", Utentes.autorizado)
+                    cmd.Parameters.AddWithValue("@telefone", Utentes.telefone)
+                    cmd.Parameters.AddWithValue("@telemovel", Utentes.telemovel)
+                    cmd.Parameters.AddWithValue("@nif", Utentes.nif)
+                    cmd.Parameters.AddWithValue("@ss", Utentes.ss)
+                    cmd.Parameters.AddWithValue("@id", Utentes.id)
+                    cmd.Parameters.AddWithValue("@dataNasc", DateOrDefault(Utentes.dataNasc))
+                    cmd.Parameters.AddWithValue("@dataEntrada", DateOrDefault(Utentes.dataEntrada))
+                    cmd.Parameters.AddWithValue("@ativo", Utentes.ativo)
+                    cmd.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
+                    cmd.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
+                    cmd.Parameters.AddWithValue("@dtCriacao", DateOrDefault(Utentes.dtCriacao))
+                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "hh:mm:ss"))
+                    cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
-            objCommand.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
-            objCommand.Parameters.AddWithValue("@nome", Utentes.nome)
-            objCommand.Parameters.AddWithValue("@morada", Utentes.morada)
-            objCommand.Parameters.AddWithValue("@complemento", Utentes.complemento)
-            objCommand.Parameters.AddWithValue("@autorizado", Utentes.autorizado)
-            objCommand.Parameters.AddWithValue("@telefone", Utentes.telefone)
-            objCommand.Parameters.AddWithValue("@telemovel", Utentes.telemovel)
-            objCommand.Parameters.AddWithValue("@nif", Utentes.nif)
-            objCommand.Parameters.AddWithValue("@ss", Utentes.ss)
-            objCommand.Parameters.AddWithValue("@id", Utentes.id)
+                    Dim ms As New IO.MemoryStream
+                    Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
+                    cmd.Parameters.AddWithValue("@foto", ms.ToArray)
 
-            Dim convertDate As String
-            convertDate = Format(Utentes.dataNasc, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataNasc", convertDate)
+                    cmd.Parameters.AddWithValue("@pais", Utentes.pais)
+                    cmd.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
+                    cmd.Parameters.AddWithValue("@sexo", Utentes.sexo)
 
-            convertDate = Format(Utentes.dataEntrada, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataEntrada", convertDate)
+                    Dim msAut As New IO.MemoryStream
+                    Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
+                    cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
 
-            objCommand.Parameters.AddWithValue("@ativo", Utentes.ativo)
-            objCommand.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
-            objCommand.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
+                    cmd.Parameters.AddWithValue("@receita", Utentes.receita)
+                    cmd.Parameters.AddWithValue("@despesa", Utentes.despesa)
+                    cmd.Parameters.AddWithValue("@codPostal", Utentes.codPostal)
+                    cmd.Parameters.AddWithValue("@dataSaida", DateOrDefault(Utentes.dataSaida))
+                    cmd.Parameters.AddWithValue("@ultimaEntrega", DateOrDefault(Utentes.ultimaEntrega))
 
-            convertDate = Format(Utentes.dtCriacao, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dtCriacao", convertDate)
-
-            convertDate = Format(Utentes.hrCriacao, "hh:mm:ss")
-            objCommand.Parameters.AddWithValue("@hrCriacao", convertDate)
-
-            objCommand.Parameters.AddWithValue("@obs", Utentes.obs)
-
-            Dim ms As New IO.MemoryStream
-            Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
-            Dim byteArray = ms.ToArray
-            objCommand.Parameters.AddWithValue("@foto", byteArray)
-
-            objCommand.Parameters.AddWithValue("@pais", Utentes.pais)
-            objCommand.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
-            objCommand.Parameters.AddWithValue("@sexo", Utentes.sexo)
-
-            Dim msAut As New IO.MemoryStream
-            Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
-            Dim byteArrayAut = msAut.ToArray
-            objCommand.Parameters.AddWithValue("@fotoAut", byteArrayAut)
-
-            objCommand.Parameters.AddWithValue("@receita", Utentes.receita)
-            objCommand.Parameters.AddWithValue("@despesa", Utentes.despesa)
-            objCommand.Parameters.AddWithValue("@codPostal", Utentes.codPostal)
-
-            convertDate = Format(Utentes.dataSaida, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataSaida", convertDate)
-
-            convertDate = Format(Utentes.ultimaEntrega, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@ultimaEntrega", convertDate)
-
-            objConnection.Open()
-            objCommand.ExecuteNonQuery()
-            objConnection.Close()
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
         Catch ex As Exception
             Message = "Erro Método AddUtente: " + ex.Message
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
+            AppLogger.Error("AddUtente", ex)
             Return False
         End Try
 
         Message = "Registo inserido com sucesso"
+        AppLogger.Info("AddUtente", "Inserido: " & Utentes.codUtente)
         Return True
     End Function
 
     Public Function DelUtente(ByVal Utentes As UtentesObj, ByRef Message As String) As Boolean
 
         Try
-
             'TODO
             'Inserir validações nas demais tabelas para impedir inconsistência de dados
             'Inserir confirmação antes de eliminar o registo
 
-            strInstruction = "DELETE FROM Utentes WHERE codUtente = @codUtente"
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
-            objCommand.Parameters.Clear()
-            objCommand.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
-
-            objConnection.Open()
-            objCommand.ExecuteNonQuery()
-            objConnection.Close()
-
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand("DELETE FROM Utentes WHERE codUtente = @codUtente", conn)
+                    cmd.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
         Catch ex As Exception
             Message = "Erro Método DelUtente: " + ex.Message
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
+            AppLogger.Error("DelUtente", ex)
             Return False
         End Try
 
         Message = "Registo removido com sucesso"
+        AppLogger.Info("DelUtente", "Removido: " & Utentes.codUtente)
         Return True
     End Function
 
     Public Function ModUtente(ByVal Utentes As UtentesObj, ByRef Message As String) As Boolean
 
         Try
-            strInstruction = "UPDATE Utentes SET codUtente=@codUtente, nome=@nome, morada=@morada, complemento=@complemento, autorizado=@autorizado, "
-            strInstruction += "telefone=@telefone, telemovel=@telemovel, nif=@nif, ss=@ss, id=@id, dataNasc=@dataNasc, dataEntrada=@dataEntrada, ativo=@ativo, "
-            strInstruction += "codFamilia=@codFamilia, utilizador=@utilizador, dtCriacao=@dtCriacao, hrCriacao=@hrCriacao, obs=@obs, foto=@foto, pais=@pais, estCivil=@estCivil, "
-            strInstruction += "sexo=@sexo, fotoAut=@fotoAut, receita=@receita, despesa=@despesa, codPostal=@codPostal, dataSaida=@dataSaida, ultimaEntrega=@ultimaEntrega "
-            strInstruction += "WHERE codUtente = @codUtente"
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
-            objCommand.Parameters.Clear()
+            Dim sql As String = "UPDATE Utentes SET codUtente=@codUtente, nome=@nome, morada=@morada, complemento=@complemento, autorizado=@autorizado, " &
+                "telefone=@telefone, telemovel=@telemovel, nif=@nif, ss=@ss, id=@id, dataNasc=@dataNasc, dataEntrada=@dataEntrada, ativo=@ativo, " &
+                "codFamilia=@codFamilia, utilizador=@utilizador, dtCriacao=@dtCriacao, hrCriacao=@hrCriacao, obs=@obs, foto=@foto, pais=@pais, estCivil=@estCivil, " &
+                "sexo=@sexo, fotoAut=@fotoAut, receita=@receita, despesa=@despesa, codPostal=@codPostal, dataSaida=@dataSaida, ultimaEntrega=@ultimaEntrega " &
+                "WHERE codUtente = @codUtente"
 
-            objCommand.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
-            objCommand.Parameters.AddWithValue("@nome", Utentes.nome)
-            objCommand.Parameters.AddWithValue("@morada", Utentes.morada)
-            objCommand.Parameters.AddWithValue("@complemento", Utentes.complemento)
-            objCommand.Parameters.AddWithValue("@autorizado", Utentes.autorizado)
-            objCommand.Parameters.AddWithValue("@telefone", Utentes.telefone)
-            objCommand.Parameters.AddWithValue("@telemovel", Utentes.telemovel)
-            objCommand.Parameters.AddWithValue("@nif", Utentes.nif)
-            objCommand.Parameters.AddWithValue("@ss", Utentes.ss)
-            objCommand.Parameters.AddWithValue("@id", Utentes.id)
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
+                    cmd.Parameters.AddWithValue("@nome", Utentes.nome)
+                    cmd.Parameters.AddWithValue("@morada", Utentes.morada)
+                    cmd.Parameters.AddWithValue("@complemento", Utentes.complemento)
+                    cmd.Parameters.AddWithValue("@autorizado", Utentes.autorizado)
+                    cmd.Parameters.AddWithValue("@telefone", Utentes.telefone)
+                    cmd.Parameters.AddWithValue("@telemovel", Utentes.telemovel)
+                    cmd.Parameters.AddWithValue("@nif", Utentes.nif)
+                    cmd.Parameters.AddWithValue("@ss", Utentes.ss)
+                    cmd.Parameters.AddWithValue("@id", Utentes.id)
+                    cmd.Parameters.AddWithValue("@dataNasc", DateOrDefault(Utentes.dataNasc))
+                    cmd.Parameters.AddWithValue("@dataEntrada", DateOrDefault(Utentes.dataEntrada))
+                    cmd.Parameters.AddWithValue("@ativo", Utentes.ativo)
+                    cmd.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
+                    cmd.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
+                    cmd.Parameters.AddWithValue("@dtCriacao", DateOrDefault(Utentes.dtCriacao))
+                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "hh:mm:ss"))
+                    cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
-            Dim convertDate As String
-            convertDate = Format(Utentes.dataNasc, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataNasc", convertDate)
+                    Dim ms As New IO.MemoryStream
+                    Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
+                    cmd.Parameters.AddWithValue("@foto", ms.ToArray)
 
-            convertDate = Format(Utentes.dataEntrada, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataEntrada", convertDate)
+                    cmd.Parameters.AddWithValue("@pais", Utentes.pais)
+                    cmd.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
+                    cmd.Parameters.AddWithValue("@sexo", Utentes.sexo)
 
-            objCommand.Parameters.AddWithValue("@ativo", Utentes.ativo)
-            objCommand.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
-            objCommand.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
+                    Dim msAut As New IO.MemoryStream
+                    Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
+                    cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
 
-            convertDate = Format(Utentes.dtCriacao, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dtCriacao", convertDate)
+                    cmd.Parameters.AddWithValue("@receita", Utentes.receita)
+                    cmd.Parameters.AddWithValue("@despesa", Utentes.despesa)
+                    cmd.Parameters.AddWithValue("@codPostal", Utentes.codPostal)
+                    cmd.Parameters.AddWithValue("@dataSaida", DateOrDefault(Utentes.dataSaida))
+                    cmd.Parameters.AddWithValue("@ultimaEntrega", DateOrDefault(Utentes.ultimaEntrega))
 
-            convertDate = Format(Utentes.hrCriacao, "hh:mm:ss")
-            objCommand.Parameters.AddWithValue("@hrCriacao", convertDate)
-
-            objCommand.Parameters.AddWithValue("@obs", Utentes.obs)
-
-            Dim ms As New IO.MemoryStream
-            Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
-            Dim byteArray = ms.ToArray
-            objCommand.Parameters.AddWithValue("@foto", byteArray)
-
-            objCommand.Parameters.AddWithValue("@pais", Utentes.pais)
-            objCommand.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
-            objCommand.Parameters.AddWithValue("@sexo", Utentes.sexo)
-
-            Dim msAut As New IO.MemoryStream
-            Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
-            Dim byteArrayAut = msAut.ToArray
-            objCommand.Parameters.AddWithValue("@fotoAut", byteArrayAut)
-
-            objCommand.Parameters.AddWithValue("@receita", Utentes.receita)
-            objCommand.Parameters.AddWithValue("@despesa", Utentes.despesa)
-            objCommand.Parameters.AddWithValue("@codPostal", Utentes.codPostal)
-
-            convertDate = Format(Utentes.dataSaida, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@dataSaida", convertDate)
-
-            convertDate = Format(Utentes.ultimaEntrega, "yyyy-MM-dd")
-            If convertDate = String.Empty Then
-                convertDate = "1900-01-01"
-            End If
-            objCommand.Parameters.AddWithValue("@ultimaEntrega", convertDate)
-
-            objConnection.Open()
-            objCommand.ExecuteNonQuery()
-            objConnection.Close()
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
         Catch ex As Exception
-            Message = "Erro Método ModUtente " + ex.Message
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
+            Message = "Erro Método ModUtente: " + ex.Message
+            AppLogger.Error("ModUtente", ex)
             Return False
         End Try
 
         Message = "Registo alterado com sucesso"
+        AppLogger.Info("ModUtente", "Alterado: " & Utentes.codUtente)
         Return True
     End Function
 
     Public Function FindUtenteByName(ByVal nome As String, ByVal autorizado As String, ByRef returnCode As Boolean, ByRef Message As String) As DataTable
 
         Dim dt As New DataTable
-        Dim ds As New DataSet()
-        Dim bsource As New BindingSource()
 
         Try
-            strInstruction = "SELECT codUtente, nome, autorizado, ativo FROM Utentes WHERE "
+            Dim hasNome As Boolean = (nome <> String.Empty)
+            Dim hasAut As Boolean = (autorizado <> String.Empty)
 
-            If nome <> String.Empty Then
-                If autorizado <> String.Empty Then
-                    strInstruction += "nome LIKE '%" & nome & "%' AND autorizado LIKE '%" & autorizado & "%'"
-                Else
-                    strInstruction += "nome LIKE '%" & nome & "%'"
-                End If
-            ElseIf autorizado <> String.Empty Then
-                strInstruction += "autorizado LIKE '%" & autorizado & "%'"
-            Else
+            If Not hasNome AndAlso Not hasAut Then
                 Message = "Para realizar a pesquisa, preencha pelo menos um dos campos"
                 returnCode = False
                 Return dt
             End If
 
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
+            Dim sql As String = "SELECT codUtente, nome, autorizado, ativo FROM Utentes WHERE 1=1"
+            If hasNome Then sql &= " AND nome LIKE @nome"
+            If hasAut Then sql &= " AND autorizado LIKE @autorizado"
 
-            objConnection.Open()
-            Dim da As New SqlDataAdapter(objCommand)
-            da.Fill(ds)
-            dt = ds.Tables(0)
-            objConnection.Close()
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand(sql, conn)
+                    If hasNome Then cmd.Parameters.AddWithValue("@nome", "%" & nome & "%")
+                    If hasAut Then cmd.Parameters.AddWithValue("@autorizado", "%" & autorizado & "%")
+                    conn.Open()
+                    Using da As New SqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
 
             If dt.Rows.Count > 0 Then
                 returnCode = True
@@ -292,58 +224,52 @@ Public Class Utentes
             End If
 
         Catch ex As Exception
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
-            Message = "Erro Método FindUtenteByName " + ex.Message
+            Message = "Erro Método FindUtenteByName: " + ex.Message
+            AppLogger.Error("FindUtenteByName", ex)
             returnCode = False
         End Try
 
         Return dt
     End Function
 
-
     Public Function ReadUtente(ByVal codUtente As String, ByRef returnCode As Boolean, ByRef Message As String) As UtentesObj
 
         Dim UtentesOut As UtentesObj = New UtentesObj
         Try
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand("SELECT * FROM Utentes WHERE codUtente = @codUtente", conn)
+                    cmd.Parameters.AddWithValue("@codUtente", codUtente)
+                    conn.Open()
+                    Using sdr As SqlDataReader = cmd.ExecuteReader()
+                        While sdr.Read()
+                            UtentesOut.codUtente = sdr("codUtente").ToString
+                            UtentesOut.nome = sdr("nome").ToString
+                            UtentesOut.autorizado = sdr("autorizado").ToString
+                            UtentesOut.morada = sdr("morada").ToString
+                            UtentesOut.complemento = sdr("complemento").ToString
+                            UtentesOut.nif = sdr("nif").ToString
+                            UtentesOut.ss = sdr("ss").ToString
+                            UtentesOut.id = sdr("id").ToString
+                            UtentesOut.pais = sdr("pais").ToString
+                            UtentesOut.telefone = sdr("telefone").ToString
+                            UtentesOut.telemovel = sdr("telemovel").ToString
+                            UtentesOut.dataNasc = sdr("dataNasc").ToString
+                            UtentesOut.dataEntrada = sdr("dataEntrada").ToString
+                            UtentesOut.dataSaida = sdr("dataSaida").ToString
+                            UtentesOut.receita = sdr("receita").ToString
+                            UtentesOut.despesa = sdr("despesa").ToString
 
-            strInstruction = "SELECT * FROM Utentes WHERE codUtente = @codUtente"
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
-            objCommand.Parameters.Clear()
-            objCommand.Parameters.AddWithValue("@codUtente", codUtente)
+                            Dim bits As Byte() = CType(sdr("foto"), Byte())
+                            Dim memorybits As New MemoryStream(bits)
+                            UtentesOut.foto = New Bitmap(memorybits)
 
-            objConnection.Open()
-            Dim sdr As SqlDataReader = objCommand.ExecuteReader()
-            While sdr.Read()
-                UtentesOut.codUtente = sdr("codUtente").ToString
-                UtentesOut.nome = sdr("nome").ToString
-                UtentesOut.autorizado = sdr("autorizado").ToString
-                UtentesOut.morada = sdr("morada").ToString
-                UtentesOut.complemento = sdr("complemento").ToString
-                UtentesOut.nif = sdr("nif").ToString
-                UtentesOut.ss = sdr("ss").ToString
-                UtentesOut.id = sdr("id").ToString
-                UtentesOut.pais = sdr("pais").ToString
-                UtentesOut.telefone = sdr("telefone").ToString
-                UtentesOut.telemovel = sdr("telemovel").ToString
-                UtentesOut.dataNasc = sdr("dataNasc").ToString
-                UtentesOut.dataEntrada = sdr("dataEntrada").ToString
-                UtentesOut.dataSaida = sdr("dataSaida").ToString
-                UtentesOut.receita = sdr("receita").ToString
-                UtentesOut.despesa = sdr("despesa").ToString
-
-                Dim bits As Byte() = CType(sdr("foto"), Byte())
-                Dim memorybits As New MemoryStream(bits)
-                Dim bitmap As New Bitmap(memorybits)
-                UtentesOut.foto = bitmap
-
-                Dim bitsAut As Byte() = CType(sdr("fotoAut"), Byte())
-                Dim memorybitsAut As New MemoryStream(bitsAut)
-                Dim bitmapAut As New Bitmap(memorybitsAut)
-                UtentesOut.fotoAut = bitmapAut
-            End While
+                            Dim bitsAut As Byte() = CType(sdr("fotoAut"), Byte())
+                            Dim memorybitsAut As New MemoryStream(bitsAut)
+                            UtentesOut.fotoAut = New Bitmap(memorybitsAut)
+                        End While
+                    End Using
+                End Using
+            End Using
 
             If UtentesOut.codUtente <> "" Then
                 returnCode = True
@@ -352,14 +278,10 @@ Public Class Utentes
                 Message = "Registo não encontrado"
             End If
 
-            objConnection.Close()
-
         Catch ex As Exception
             returnCode = False
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
             Message = "Erro Método ReadUtente: " + ex.Message
+            AppLogger.Error("ReadUtente", ex)
         End Try
 
         Return UtentesOut
@@ -373,16 +295,13 @@ Public Class Utentes
         returnCode = True
 
         Try
-
-            strInstruction = "SELECT MAX( codUtente ) FROM Utentes"
-            objCommand.CommandText = strInstruction
-            objCommand.Connection = objConnection
-
-            objConnection.Open()
-
-            newCodUtente = objCommand.ExecuteScalar().ToString()
-
-            objConnection.Close()
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand("SELECT MAX( codUtente ) FROM Utentes", conn)
+                    conn.Open()
+                    Dim result As Object = cmd.ExecuteScalar()
+                    newCodUtente = If(result Is Nothing OrElse result Is DBNull.Value, "", result.ToString())
+                End Using
+            End Using
 
             If newCodUtente = "" Then
                 newCodUtente = "U001"
@@ -410,18 +329,19 @@ Public Class Utentes
                         Case Else
                             letra = "Z"
                     End Select
+                Else
+                    letra = CChar(Left$(newCodUtente, 1))
                 End If
-                codeString += 1
-                codeString = codeString.PadLeft(3, "0")
-                newCodUtente = letra + codeString
+                ' Integer increment (was string concatenation under Option Strict Off).
+                Dim codeInt As Integer = Integer.Parse(codeString) + 1
+                codeString = codeInt.ToString().PadLeft(3, "0"c)
+                newCodUtente = letra & codeString
             End If
 
         Catch ex As Exception
             returnCode = False
-            If objConnection.State = ConnectionState.Open Then
-                objConnection.Close()
-            End If
             Message = "Erro Método GetNewCodUtente: " + ex.Message
+            AppLogger.Error("GetNewCodUtente", ex)
         End Try
 
         Return newCodUtente

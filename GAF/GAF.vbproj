@@ -65,6 +65,7 @@
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -130,6 +131,15 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Utentes.vb" />
+    <Compile Include="AppLogger.vb" />
+    <Compile Include="Stock.vb" />
+    <Compile Include="StockScreen.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="StockScreen.Designer.vb">
+      <DependentUpon>StockScreen.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="PesquisaUtenteModal.resx">

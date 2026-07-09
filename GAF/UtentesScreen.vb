@@ -12,7 +12,23 @@ Public Class UtentesScreen
         Dim toolTip As ToolTip = New ToolTip
         toolTip.SetToolTip(BtnPesquisarUtentes, "Procurar Utente por Nome")
 
+        AppLogger.Info("UtentesScreen", "Aplicação iniciada")
+        Stock.EnsureSchema()
+
         setScreen("I")
+    End Sub
+
+    Private Sub UtentesScreen_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        AppLogger.Info("UtentesScreen", "Aplicação encerrada")
+        AppLogger.Close()
+    End Sub
+
+    Private Sub BtnVerStock_Click(sender As Object, e As EventArgs) Handles BtnVerStock.Click
+        Dim frm As New StockScreen()
+        If UtentesObj.codUtente <> String.Empty Then
+            frm.SetCodUtente(UtentesObj.codUtente)
+        End If
+        frm.ShowDialog()
     End Sub
 
     Public Sub setCodUtente(ByVal codUtente As String)
@@ -252,6 +268,7 @@ Public Class UtentesScreen
         BtnFotoAut.Enabled = botoes_geral
         BtnAddNota.Enabled = botoes_geral
         BtnPesquisarUtentes.Enabled = codUtente
+        BtnVerStock.Enabled = (mode = "R")
 
     End Sub
 
