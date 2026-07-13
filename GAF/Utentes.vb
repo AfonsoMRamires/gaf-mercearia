@@ -33,11 +33,12 @@ Public Class Utentes
         Public ultimaEntrega As Date = Nothing
     End Class
 
-    ' Formats a date as yyyy-MM-dd, falling back to 1900-01-01 for empty dates.
+    ' Formats a date as yyyy-MM-dd, falling back to 1900-01-01 for empty/out-of-range
+    ' dates. An unset Date is 0001-01-01 (Date.MinValue), which SQL datetime rejects
+    ' (min 1753-01-01), so guard on the year rather than on an empty string.
     Private Shared Function DateOrDefault(ByVal d As Date) As String
-        Dim s As String = Format(d, "yyyy-MM-dd")
-        If s = String.Empty Then s = "1900-01-01"
-        Return s
+        If d = Nothing OrElse d.Year < 1900 Then Return "1900-01-01"
+        Return Format(d, "yyyy-MM-dd")
     End Function
 
     Public Function AddUtente(ByVal Utentes As UtentesObj, ByRef Message As String) As Boolean
@@ -63,7 +64,7 @@ Public Class Utentes
                     cmd.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
                     cmd.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
                     cmd.Parameters.AddWithValue("@dtCriacao", DateOrDefault(Utentes.dtCriacao))
-                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "hh:mm:ss"))
+                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "HH:mm:ss"))
                     cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
                     Dim ms As New IO.MemoryStream
@@ -151,7 +152,7 @@ Public Class Utentes
                     cmd.Parameters.AddWithValue("@codFamilia", Utentes.codFamilia)
                     cmd.Parameters.AddWithValue("@utilizador", Utentes.utilizador)
                     cmd.Parameters.AddWithValue("@dtCriacao", DateOrDefault(Utentes.dtCriacao))
-                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "hh:mm:ss"))
+                    cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "HH:mm:ss"))
                     cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
                     Dim ms As New IO.MemoryStream
@@ -258,6 +259,18 @@ Public Class Utentes
                             UtentesOut.dataSaida = sdr("dataSaida").ToString
                             UtentesOut.receita = sdr("receita").ToString
                             UtentesOut.despesa = sdr("despesa").ToString
+                            UtentesOut.estCivil = sdr("estCivil").ToString
+                            UtentesOut.sexo = sdr("sexo").ToString
+                            UtentesOut.codPostal = sdr("codPostal").ToString
+                            UtentesOut.utilizador = sdr("utilizador").ToString
+                            UtentesOut.obs = sdr("obs").ToString
+                            If Not IsDBNull(sdr("ativo")) Then UtentesOut.ativo = CBool(sdr("ativo"))
+                            If Not IsDBNull(sdr("codFamilia")) Then UtentesOut.codFamilia = CInt(sdr("codFamilia"))
+                            ' Preserve creation stamp and last-delivery cache across an edit;
+                            ' otherwise ModUtente would overwrite them with the 1900 default.
+                            If Not IsDBNull(sdr("dtCriacao")) Then UtentesOut.dtCriacao = CDate(sdr("dtCriacao"))
+                            If Not IsDBNull(sdr("hrCriacao")) Then UtentesOut.hrCriacao = CDate(sdr("hrCriacao"))
+                            If Not IsDBNull(sdr("ultimaEntrega")) Then UtentesOut.ultimaEntrega = CDate(sdr("ultimaEntrega"))
 
                             Dim bits As Byte() = CType(sdr("foto"), Byte())
                             Dim memorybits As New MemoryStream(bits)
@@ -295,8 +308,20 @@ Public Class Utentes
         returnCode = True
 
         Try
+            ' The prefix sequence is U, A, B, C, ... so plain MAX(codUtente) is wrong:
+            ' lexically "U999" > "A001", meaning after a U->A rollover MAX would keep
+            ' returning the old U-code forever and regenerate a duplicate. Rank the
+            ' prefix in sequence order, then by the numeric suffix, and take the top.
+            Dim sql As String =
+                "SELECT TOP 1 codUtente FROM Utentes " &
+                "ORDER BY CASE LEFT(codUtente,1) " &
+                "WHEN 'U' THEN 0 WHEN 'A' THEN 1 WHEN 'B' THEN 2 WHEN 'C' THEN 3 " &
+                "WHEN 'D' THEN 4 WHEN 'E' THEN 5 WHEN 'F' THEN 6 WHEN 'G' THEN 7 " &
+                "WHEN 'H' THEN 8 ELSE 99 END DESC, " &
+                "CAST(RIGHT(codUtente,3) AS INT) DESC"
+
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
-                Using cmd As New SqlCommand("SELECT MAX( codUtente ) FROM Utentes", conn)
+                Using cmd As New SqlCommand(sql, conn)
                     conn.Open()
                     Dim result As Object = cmd.ExecuteScalar()
                     newCodUtente = If(result Is Nothing OrElse result Is DBNull.Value, "", result.ToString())

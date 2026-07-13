@@ -57,8 +57,21 @@ Public Class UtentesScreen
         UtentesObjLocal.telemovel = TBTelemovel.Text
         UtentesObjLocal.estCivil = CBEstCivil.SelectedItem
         UtentesObjLocal.sexo = CBGenero.SelectedItem
-        UtentesObjLocal.receita = TBReceita.Text
-        UtentesObjLocal.despesa = TBDespesa.Text
+
+        Dim receitaVal As Decimal
+        Dim despesaVal As Decimal
+        If TBReceita.Text.Trim() = String.Empty Then TBReceita.Text = "0"
+        If TBDespesa.Text.Trim() = String.Empty Then TBDespesa.Text = "0"
+        If Not Decimal.TryParse(TBReceita.Text, receitaVal) Then
+            Message = "Receita inválida"
+            Return False
+        End If
+        If Not Decimal.TryParse(TBDespesa.Text, despesaVal) Then
+            Message = "Despesa inválida"
+            Return False
+        End If
+        UtentesObjLocal.receita = receitaVal
+        UtentesObjLocal.despesa = despesaVal
         If TBDtEntrada.Text = String.Empty Then
             TBDtEntrada.Text = Format(DateTime.Now, "dd/MM/yyyy")
         End If

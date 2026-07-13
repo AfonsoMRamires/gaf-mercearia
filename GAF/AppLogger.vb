@@ -60,7 +60,12 @@ Public Module AppLogger
                 _writer = Nothing
             End If
             _currentMonth = thisMonth
-            Dim logPath As String = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GAF_" & thisMonth & ".log")
+            ' Write under %LocalAppData%\GAF, not the exe directory — the latter is
+            ' often non-writable (e.g. Program Files), which would silently drop logs.
+            Dim logDir As String = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GAF")
+            Directory.CreateDirectory(logDir)
+            Dim logPath As String = Path.Combine(logDir, "GAF_" & thisMonth & ".log")
             _writer = New StreamWriter(logPath, append:=True, encoding:=System.Text.Encoding.UTF8)
         End If
     End Sub
