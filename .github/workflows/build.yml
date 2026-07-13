@@ -23,6 +23,16 @@ jobs:
       - name: Restore
         run: nuget restore GAF.sln
 
+      # The project copies GAF.mdf / GAF_log.ldf to the output dir on every build
+      # (CopyToOutputDirectory=Always), but the DB files are gitignored and not in
+      # the repo. Create empty stubs so the compile-and-copy succeeds in CI; a real
+      # DB is provisioned on a developer machine, not needed just to verify the build.
+      - name: Stub gitignored DB files
+        shell: pwsh
+        run: |
+          if (-not (Test-Path GAF/GAF.mdf))     { New-Item -ItemType File -Path GAF/GAF.mdf     | Out-Null }
+          if (-not (Test-Path GAF/GAF_log.ldf)) { New-Item -ItemType File -Path GAF/GAF_log.ldf | Out-Null }
+
       - name: Build
         run: msbuild GAF.sln /p:Configuration=Release /p:Platform="Any CPU" /m
 
