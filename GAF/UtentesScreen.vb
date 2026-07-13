@@ -12,7 +12,23 @@ Public Class UtentesScreen
         Dim toolTip As ToolTip = New ToolTip
         toolTip.SetToolTip(BtnPesquisarUtentes, "Procurar Utente por Nome")
 
+        AppLogger.Info("UtentesScreen", "Aplicação iniciada")
+        Stock.EnsureSchema()
+
         setScreen("I")
+    End Sub
+
+    Private Sub UtentesScreen_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        AppLogger.Info("UtentesScreen", "Aplicação encerrada")
+        AppLogger.Close()
+    End Sub
+
+    Private Sub BtnVerStock_Click(sender As Object, e As EventArgs) Handles BtnVerStock.Click
+        Dim frm As New StockScreen()
+        If UtentesObj.codUtente <> String.Empty Then
+            frm.SetCodUtente(UtentesObj.codUtente)
+        End If
+        frm.ShowDialog()
     End Sub
 
     Public Sub setCodUtente(ByVal codUtente As String)
@@ -41,8 +57,21 @@ Public Class UtentesScreen
         UtentesObjLocal.telemovel = TBTelemovel.Text
         UtentesObjLocal.estCivil = CBEstCivil.SelectedItem
         UtentesObjLocal.sexo = CBGenero.SelectedItem
-        UtentesObjLocal.receita = TBReceita.Text
-        UtentesObjLocal.despesa = TBDespesa.Text
+
+        Dim receitaVal As Decimal
+        Dim despesaVal As Decimal
+        If TBReceita.Text.Trim() = String.Empty Then TBReceita.Text = "0"
+        If TBDespesa.Text.Trim() = String.Empty Then TBDespesa.Text = "0"
+        If Not Decimal.TryParse(TBReceita.Text, receitaVal) Then
+            Message = "Receita inválida"
+            Return False
+        End If
+        If Not Decimal.TryParse(TBDespesa.Text, despesaVal) Then
+            Message = "Despesa inválida"
+            Return False
+        End If
+        UtentesObjLocal.receita = receitaVal
+        UtentesObjLocal.despesa = despesaVal
         If TBDtEntrada.Text = String.Empty Then
             TBDtEntrada.Text = Format(DateTime.Now, "dd/MM/yyyy")
         End If
@@ -252,6 +281,7 @@ Public Class UtentesScreen
         BtnFotoAut.Enabled = botoes_geral
         BtnAddNota.Enabled = botoes_geral
         BtnPesquisarUtentes.Enabled = codUtente
+        BtnVerStock.Enabled = (mode = "R")
 
     End Sub
 

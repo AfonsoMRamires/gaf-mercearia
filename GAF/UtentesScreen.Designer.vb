@@ -75,6 +75,7 @@ Partial Class UtentesScreen
         Me.BtnFotoAut = New System.Windows.Forms.Button()
         Me.OPDFoto = New System.Windows.Forms.OpenFileDialog()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.BtnVerStock = New System.Windows.Forms.Button()
         Me.TSBotoes = New System.Windows.Forms.ToolStrip()
         Me.ToolStripSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
@@ -682,6 +683,7 @@ Partial Class UtentesScreen
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.BtnVerStock)
         Me.GroupBox2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GroupBox2.Location = New System.Drawing.Point(691, 211)
         Me.GroupBox2.Name = "GroupBox2"
@@ -689,6 +691,15 @@ Partial Class UtentesScreen
         Me.GroupBox2.TabIndex = 18
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Última Entrega"
+        '
+        'BtnVerStock
+        '
+        Me.BtnVerStock.Location = New System.Drawing.Point(12, 40)
+        Me.BtnVerStock.Name = "BtnVerStock"
+        Me.BtnVerStock.Size = New System.Drawing.Size(206, 40)
+        Me.BtnVerStock.TabIndex = 0
+        Me.BtnVerStock.Text = "Ver / Registar Entregas"
+        Me.BtnVerStock.UseVisualStyleBackColor = True
         '
         'TSBotoes
         '
@@ -920,6 +931,7 @@ Partial Class UtentesScreen
     Friend WithEvents BtnFotoAut As Button
     Friend WithEvents OPDFoto As OpenFileDialog
     Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents BtnVerStock As Button
     Friend WithEvents TSBotoes As ToolStrip
     Friend WithEvents BtnAlterar As ToolStripButton
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
