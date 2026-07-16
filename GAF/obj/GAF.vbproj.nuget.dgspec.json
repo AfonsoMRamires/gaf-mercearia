@@ -1,0 +1,58 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/afonsoramires/Downloads/GAF/GAF/GAF.vbproj": {}
+  },
+  "projects": {
+    "/Users/afonsoramires/Downloads/GAF/GAF/GAF.vbproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/afonsoramires/Downloads/GAF/GAF/GAF.vbproj",
+        "projectName": "GAF",
+        "projectPath": "/Users/afonsoramires/Downloads/GAF/GAF/GAF.vbproj",
+        "packagesPath": "/Users/afonsoramires/.nuget/packages/",
+        "outputPath": "/Users/afonsoramires/Downloads/GAF/GAF/obj/",
+        "projectStyle": "PackageReference",
+        "skipContentFileWrite": true,
+        "UsingMicrosoftNETSdk": false,
+        "configFilePaths": [
+          "/Users/afonsoramires/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "framework": "net472",
+            "projectReferences": {}
+          }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net472": {
+          "framework": "net472",
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
+            "System.Resources.Extensions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          }
+        }
+      }
+    }
+  }
+}
