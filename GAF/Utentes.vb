@@ -269,7 +269,7 @@ Public Class Utentes
                             ' Preserve creation stamp and last-delivery cache across an edit;
                             ' otherwise ModUtente would overwrite them with the 1900 default.
                             If Not IsDBNull(sdr("dtCriacao")) Then UtentesOut.dtCriacao = CDate(sdr("dtCriacao"))
-                            If Not IsDBNull(sdr("hrCriacao")) Then UtentesOut.hrCriacao = CDate(sdr("hrCriacao"))
+                            If Not IsDBNull(sdr("hrCriacao")) Then UtentesOut.hrCriacao = Date.MinValue.Add(CType(sdr("hrCriacao"), TimeSpan))
                             If Not IsDBNull(sdr("ultimaEntrega")) Then UtentesOut.ultimaEntrega = CDate(sdr("ultimaEntrega"))
 
                             Dim bits As Byte() = CType(sdr("foto"), Byte())

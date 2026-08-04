@@ -7,10 +7,24 @@ Public Class UtentesScreen
     Dim UtentesObj As Utentes.UtentesObj = New Utentes.UtentesObj
     Dim mode As Char = "I"
 
+    Private Const EM_SETCUEBANNER As Integer = &H1501
+
+    <System.Runtime.InteropServices.DllImport("user32.dll", CharSet:=System.Runtime.InteropServices.CharSet.Unicode)>
+    Private Shared Function SendMessage(hWnd As IntPtr, msg As Integer, wParam As IntPtr, lParam As String) As IntPtr
+    End Function
+
+    Private Sub SetDateFormatHint(tb As TextBox)
+        SendMessage(tb.Handle, EM_SETCUEBANNER, IntPtr.Zero, "dd/mm/aaaa")
+    End Sub
+
     Private Sub UtentesScreen_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         Dim toolTip As ToolTip = New ToolTip
         toolTip.SetToolTip(BtnPesquisarUtentes, "Procurar Utente por Nome")
+
+        SetDateFormatHint(TBDataNasc)
+        SetDateFormatHint(TBDtEntrada)
+        SetDateFormatHint(TBDtSaida)
 
         AppLogger.Info("UtentesScreen", "Aplicação iniciada")
         Stock.EnsureSchema()
@@ -52,7 +66,12 @@ Public Class UtentesScreen
         If TBDataNasc.Text = String.Empty Then
             TBDataNasc.Text = "01/01/1900"
         End If
-        UtentesObjLocal.dataNasc = TBDataNasc.Text
+        Dim dataNascVal As Date
+        If Not Date.TryParseExact(TBDataNasc.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, dataNascVal) Then
+            Message = "Data de Nascimento inválida (use dd/mm/aaaa)"
+            Return False
+        End If
+        UtentesObjLocal.dataNasc = dataNascVal
         UtentesObjLocal.telefone = TBTelefone.Text
         UtentesObjLocal.telemovel = TBTelemovel.Text
         UtentesObjLocal.estCivil = CBEstCivil.SelectedItem
@@ -75,11 +94,21 @@ Public Class UtentesScreen
         If TBDtEntrada.Text = String.Empty Then
             TBDtEntrada.Text = Format(DateTime.Now, "dd/MM/yyyy")
         End If
-        UtentesObjLocal.dataEntrada = TBDtEntrada.Text
+        Dim dataEntradaVal As Date
+        If Not Date.TryParseExact(TBDtEntrada.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, dataEntradaVal) Then
+            Message = "Data de Entrada inválida (use dd/mm/aaaa)"
+            Return False
+        End If
+        UtentesObjLocal.dataEntrada = dataEntradaVal
         If TBDtSaida.Text = String.Empty Then
             TBDtSaida.Text = "31/12/9999"
         End If
-        UtentesObjLocal.dataSaida = TBDtSaida.Text
+        Dim dataSaidaVal As Date
+        If Not Date.TryParseExact(TBDtSaida.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, dataSaidaVal) Then
+            Message = "Data de Saída inválida (use dd/mm/aaaa)"
+            Return False
+        End If
+        UtentesObjLocal.dataSaida = dataSaidaVal
         UtentesObjLocal.foto = PBFoto.Image
         UtentesObjLocal.fotoAut = PBFotoAut.Image
 
