@@ -140,6 +140,13 @@
       <DependentUpon>StockScreen.vb</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ArtigoModal.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ArtigoModal.Designer.vb">
+      <DependentUpon>ArtigoModal.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="PesquisaUtenteModal.resx">
@@ -184,13 +191,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GAF.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GAF_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <DependentUpon>GAF.mdf</DependentUpon>
-    </Content>
     <None Include="Resources\icons8-broom-24.png" />
     <None Include="Resources\icons8-find-user-male-24.png" />
     <None Include="Resources\icons8-search-16.png" />

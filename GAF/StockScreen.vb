@@ -4,198 +4,145 @@ Public Class StockScreen
     Private returnCode As Boolean = False
     Private Message As String = String.Empty
 
-    ' 0 = inserting a new artigo; >0 = editing the artigo with this code.
-    Private currentCodArtigo As Integer = 0
+    ' Set by SetCodUtente before the dialog is shown; applied once the form's
+    ' handle actually exists (Load), since TabPages other than the initially
+    ' selected one don't get their child controls' handles created until first
+    ' shown — setting .Text on them any earlier is unreliable.
+    Private pendingCodUtente As String = String.Empty
+
+    ' Full (unfiltered) combined Entregas+Saídas rows for whichever Utente is
+    ' currently loaded in Histórico Utente; filters are applied over this via
+    ' a DataView rather than re-querying the DB each time.
+    Private historicoDt As DataTable = Nothing
 
     Private Sub StockScreen_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        DTPEntrega.Value = Date.Today
-        LoadArtigos()
-        LoadArtigosCombo()
-        ClearArtigoFields()
+        CBTipoHist.SelectedIndex = 0
+        LoadArtigosSaidaCombo()
+
+        If pendingCodUtente <> String.Empty Then
+            TBCodUtenteHist.Text = pendingCodUtente
+            LoadHistorico(pendingCodUtente)
+        End If
     End Sub
 
     ' Called by UtentesScreen to pre-fill the currently displayed client.
     Public Sub SetCodUtente(ByVal codUtente As String)
-        TBCodUtenteEntrega.Text = codUtente
-        TBCodUtenteHist.Text = codUtente
-        LookupNomeUtente(codUtente)
-        LoadHistorico(codUtente)
+        pendingCodUtente = codUtente
     End Sub
 
-    ' ── Artigos tab ────────────────────────────────────────────────────────────
-    Private Sub LoadArtigos()
+    ' ── Saída de Stock tab ───────────────────────────────────────────────────────
+    Private Sub LoadArtigosSaidaCombo()
         Dim dt As DataTable = Stock.GetArtigos(returnCode, Message)
         If returnCode Then
-            DGVArtigos.DataSource = dt
-        Else
-            MsgBox(Message)
+            CBArtigoSaida.DataSource = dt
+            CBArtigoSaida.DisplayMember = "descricao"
+            CBArtigoSaida.ValueMember = "codArtigo"
+            CBArtigoSaida.SelectedIndex = -1
         End If
     End Sub
 
-    Private Sub LoadArtigosCombo()
-        Dim dt As DataTable = Stock.GetArtigos(returnCode, Message)
-        If returnCode Then
-            CBArtigo.DataSource = dt
-            CBArtigo.DisplayMember = "descricao"
-            CBArtigo.ValueMember = "codArtigo"
-            CBArtigo.SelectedIndex = -1
-        End If
-    End Sub
-
-    Private Sub ClearArtigoFields()
-        currentCodArtigo = 0
-        TBDescricao.Text = String.Empty
-        TBUnidade.Text = "un"
-        NUDStockMinimo.Value = 0
-        CBAtivo.Checked = True
-        TBObsArtigo.Text = String.Empty
-        TBDescricao.Focus()
-    End Sub
-
-    Private Sub DGVArtigos_SelectionChanged(sender As Object, e As EventArgs) Handles DGVArtigos.SelectionChanged
-        If DGVArtigos.SelectedRows.Count = 0 Then Return
-        Dim row As DataGridViewRow = DGVArtigos.SelectedRows(0)
-        If row.IsNewRow OrElse row.Cells("codArtigo").Value Is Nothing Then Return
-
-        currentCodArtigo = CInt(row.Cells("codArtigo").Value)
-        TBDescricao.Text = row.Cells("descricao").Value.ToString()
-        TBUnidade.Text = row.Cells("unidade").Value.ToString()
-        NUDStockMinimo.Value = CDec(row.Cells("stockMinimo").Value)
-        CBAtivo.Checked = CBool(row.Cells("ativo").Value)
-        TBObsArtigo.Text = row.Cells("obs").Value.ToString()
-    End Sub
-
-    Private Sub BtnNovoArtigo_Click(sender As Object, e As EventArgs) Handles BtnNovoArtigo.Click
-        ClearArtigoFields()
-    End Sub
-
-    Private Sub BtnGravarArtigo_Click(sender As Object, e As EventArgs) Handles BtnGravarArtigo.Click
-        If TBDescricao.Text.Trim() = String.Empty Then
-            MsgBox("Preencha a descrição do artigo")
-            Return
-        End If
-
-        Dim a As New Stock.ArtigoObj With {
-            .codArtigo = currentCodArtigo,
-            .descricao = TBDescricao.Text.Trim(),
-            .unidade = TBUnidade.Text.Trim(),
-            .stockMinimo = NUDStockMinimo.Value,
-            .ativo = CBAtivo.Checked,
-            .obs = TBObsArtigo.Text
-        }
-
-        Dim ok As Boolean
-        If currentCodArtigo = 0 Then
-            ok = Stock.AddArtigo(a, Message)
-        Else
-            ok = Stock.ModArtigo(a, Message)
-        End If
-
-        MsgBox(Message)
-        If ok Then
-            LoadArtigos()
-            LoadArtigosCombo()
-            ClearArtigoFields()
-        End If
-    End Sub
-
-    Private Sub BtnEntradaStock_Click(sender As Object, e As EventArgs) Handles BtnEntradaStock.Click
-        If currentCodArtigo = 0 Then
-            MsgBox("Selecione um artigo na lista para dar entrada de stock")
-            Return
-        End If
-
-        Dim resposta As String = InputBox("Quantidade a dar entrada:", "Entrada de Stock", "0")
-        If resposta = String.Empty Then Return
-
-        Dim qtd As Decimal
-        If Not Decimal.TryParse(resposta, qtd) OrElse qtd <= 0 Then
-            MsgBox("Quantidade inválida")
-            Return
-        End If
-
-        If Stock.EntradaStock(currentCodArtigo, qtd, Message) Then
-            LoadArtigos()
-            LoadArtigosCombo()
-        End If
-        MsgBox(Message)
-    End Sub
-
-    Private Sub BtnLimparArtigo_Click(sender As Object, e As EventArgs) Handles BtnLimparArtigo.Click
-        ClearArtigoFields()
-    End Sub
-
-    ' ── Registar Entrega tab ─────────────────────────────────────────────────────
-    Private Sub LookupNomeUtente(ByVal codUtente As String)
+    Private Sub LookupNomeUtenteSaida(ByVal codUtente As String)
         If codUtente.Trim() = String.Empty Then
-            LblNomeUtente.Text = String.Empty
+            LblNomeUtenteSaida.Text = String.Empty
             Return
         End If
         Dim u As Utentes.UtentesObj = New Utentes().ReadUtente(codUtente, returnCode, Message)
         If returnCode Then
-            LblNomeUtente.Text = u.nome
+            LblNomeUtenteSaida.Text = u.nome
         Else
-            LblNomeUtente.Text = "(não encontrado)"
+            LblNomeUtenteSaida.Text = "(não encontrado)"
         End If
     End Sub
 
-    Private Sub BtnProcurarUtenteEntrega_Click(sender As Object, e As EventArgs) Handles BtnProcurarUtenteEntrega.Click
-        LookupNomeUtente(TBCodUtenteEntrega.Text)
+    Private Sub BtnProcurarUtenteSaida_Click(sender As Object, e As EventArgs) Handles BtnProcurarUtenteSaida.Click
+        LookupNomeUtenteSaida(TBUtenteSaida.Text)
     End Sub
 
-    Private Sub BtnRegistarEntrega_Click(sender As Object, e As EventArgs) Handles BtnRegistarEntrega.Click
-        If TBCodUtenteEntrega.Text.Trim() = String.Empty Then
-            MsgBox("Indique o código do utente")
-            Return
-        End If
-        If CBArtigo.SelectedValue Is Nothing Then
+    Private Sub BtnRegistarSaida_Click(sender As Object, e As EventArgs) Handles BtnRegistarSaida.Click
+        If CBArtigoSaida.SelectedValue Is Nothing Then
             MsgBox("Selecione um artigo")
             Return
         End If
-        If NUDQuantidade.Value <= 0 Then
+        If NUDQuantidadeSaida.Value <= 0 Then
             MsgBox("Quantidade tem de ser maior que zero")
             Return
         End If
 
-        ' Confirm the client exists before recording.
-        LookupNomeUtente(TBCodUtenteEntrega.Text)
+        Dim codUtenteSaida As String = TBUtenteSaida.Text.Trim()
+        If codUtenteSaida = String.Empty Then
+            MsgBox("Indique o código do utente")
+            Return
+        End If
+        LookupNomeUtenteSaida(codUtenteSaida)
         If Not returnCode Then
             MsgBox("Utente não encontrado")
             Return
         End If
 
-        Dim ent As New Stock.EntregaObj With {
-            .codUtente = TBCodUtenteEntrega.Text.Trim(),
-            .codArtigo = CInt(CBArtigo.SelectedValue),
-            .quantidade = NUDQuantidade.Value,
-            .dtEntrega = DTPEntrega.Value.Date,
+        Dim s As New Stock.SaidaObj With {
+            .codArtigo = CInt(CBArtigoSaida.SelectedValue),
+            .quantidade = NUDQuantidadeSaida.Value,
+            .dtSaida = Date.Today,
+            .motivo = TBMotivoSaida.Text.Trim(),
             .utilizador = Environment.UserName,
-            .obs = TBObsEntrega.Text
+            .codUtente = codUtenteSaida
         }
 
-        If Stock.RegistarEntrega(ent, Message) Then
-            NUDQuantidade.Value = 0
-            TBObsEntrega.Text = String.Empty
-            LoadArtigos()
-            LoadArtigosCombo()
-            LoadHistorico(ent.codUtente)
+        If Stock.RegistarSaida(s, Message) Then
+            NUDQuantidadeSaida.Value = 0
+            TBMotivoSaida.Text = String.Empty
+            LoadArtigosSaidaCombo()
+            LoadHistorico(codUtenteSaida)
         End If
         MsgBox(Message)
     End Sub
 
     ' ── Histórico tab ────────────────────────────────────────────────────────────
+    ' Combined Entregas + Saídas (only the ones attributed to this Utente) for
+    ' the given codUtente. Resets the filter row on every fresh load.
     Private Sub LoadHistorico(ByVal codUtente As String)
         If codUtente.Trim() = String.Empty Then Return
-        Dim dt As DataTable = Stock.GetEntregasByUtente(codUtente, returnCode, Message)
+        Dim dt As DataTable = Stock.GetHistoricoUtente(codUtente, returnCode, Message)
         If returnCode Then
-            DGVHistorico.DataSource = dt
+            historicoDt = dt
+            DTPDataDeHist.Checked = False
+            DTPDataAteHist.Checked = False
+            TBDescricaoHist.Text = String.Empty
+            CBTipoHist.SelectedIndex = 0
+            ApplyHistoricoFilter()
         Else
             MsgBox(Message)
         End If
     End Sub
 
+    Private Sub ApplyHistoricoFilter()
+        If historicoDt Is Nothing Then Return
+
+        Dim filters As New List(Of String)
+        If DTPDataDeHist.Checked Then
+            filters.Add("Data >= #" & DTPDataDeHist.Value.ToString("MM/dd/yyyy") & "#")
+        End If
+        If DTPDataAteHist.Checked Then
+            filters.Add("Data <= #" & DTPDataAteHist.Value.ToString("MM/dd/yyyy") & "#")
+        End If
+        If TBDescricaoHist.Text.Trim() <> String.Empty Then
+            filters.Add("Descricao LIKE '%" & TBDescricaoHist.Text.Trim().Replace("'", "''") & "%'")
+        End If
+        If CBTipoHist.SelectedIndex > 0 Then
+            filters.Add("Tipo = '" & CBTipoHist.SelectedItem.ToString() & "'")
+        End If
+
+        Dim dv As DataView = historicoDt.DefaultView
+        dv.RowFilter = String.Join(" AND ", filters)
+        DGVHistorico.DataSource = dv
+    End Sub
+
     Private Sub BtnProcurarHist_Click(sender As Object, e As EventArgs) Handles BtnProcurarHist.Click
         LoadHistorico(TBCodUtenteHist.Text)
+    End Sub
+
+    Private Sub BtnFiltrarHist_Click(sender As Object, e As EventArgs) Handles BtnFiltrarHist.Click
+        ApplyHistoricoFilter()
     End Sub
 
 End Class

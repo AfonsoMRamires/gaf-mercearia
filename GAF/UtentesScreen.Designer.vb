@@ -91,8 +91,36 @@ Partial Class UtentesScreen
         Me.BtnGravar = New System.Windows.Forms.ToolStripButton()
         Me.BtnLimpar = New System.Windows.Forms.ToolStripButton()
         Me.BtnImprimirCartao = New System.Windows.Forms.ToolStripButton()
+        Me.ToolStripSeparator5 = New System.Windows.Forms.ToolStripSeparator()
+        Me.BtnNavFicha = New System.Windows.Forms.ToolStripButton()
+        Me.BtnNavTodosUtentes = New System.Windows.Forms.ToolStripButton()
+        Me.BtnNavStock = New System.Windows.Forms.ToolStripButton()
         Me.PBFotoAut = New System.Windows.Forms.PictureBox()
         Me.PBFoto = New System.Windows.Forms.PictureBox()
+        Me.PnlTodosUtentes = New System.Windows.Forms.Panel()
+        Me.DGVTodosUtentes = New System.Windows.Forms.DataGridView()
+        Me.PnlStock = New System.Windows.Forms.Panel()
+        Me.TCStockMain = New System.Windows.Forms.TabControl()
+        Me.TPArtigosMain = New System.Windows.Forms.TabPage()
+        Me.DGVArtigosMain = New System.Windows.Forms.DataGridView()
+        Me.PnlArtigoButtonsMain = New System.Windows.Forms.Panel()
+        Me.BtnNovoArtigoMain = New System.Windows.Forms.Button()
+        Me.BtnEntradaStockMain = New System.Windows.Forms.Button()
+        Me.BtnEliminarArtigoMain = New System.Windows.Forms.Button()
+        Me.TPEntregaMain = New System.Windows.Forms.TabPage()
+        Me.LblCodUtenteEntregaMain = New System.Windows.Forms.Label()
+        Me.TBCodUtenteEntregaMain = New System.Windows.Forms.TextBox()
+        Me.BtnProcurarUtenteEntregaMain = New System.Windows.Forms.Button()
+        Me.LblNomeUtenteEntregaMain = New System.Windows.Forms.Label()
+        Me.LblArtigoEntregaMain = New System.Windows.Forms.Label()
+        Me.CBArtigoEntregaMain = New System.Windows.Forms.ComboBox()
+        Me.LblQuantidadeEntregaMain = New System.Windows.Forms.Label()
+        Me.NUDQuantidadeEntregaMain = New System.Windows.Forms.NumericUpDown()
+        Me.LblDtEntregaMain = New System.Windows.Forms.Label()
+        Me.DTPEntregaMain = New System.Windows.Forms.DateTimePicker()
+        Me.LblObsEntregaMain = New System.Windows.Forms.Label()
+        Me.TBObsEntregaMain = New System.Windows.Forms.TextBox()
+        Me.BtnRegistarEntregaMain = New System.Windows.Forms.Button()
         Me.TabControl1.SuspendLayout()
         Me.TPDadosPessoais.SuspendLayout()
         Me.TPAnotacoes.SuspendLayout()
@@ -100,6 +128,15 @@ Partial Class UtentesScreen
         Me.GBUtente.SuspendLayout()
         Me.TSBotoes.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
+        Me.PnlTodosUtentes.SuspendLayout()
+        CType(Me.DGVTodosUtentes, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.PnlStock.SuspendLayout()
+        Me.TCStockMain.SuspendLayout()
+        Me.TPArtigosMain.SuspendLayout()
+        CType(Me.DGVArtigosMain, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.PnlArtigoButtonsMain.SuspendLayout()
+        Me.TPEntregaMain.SuspendLayout()
+        CType(Me.NUDQuantidadeEntregaMain, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PBFotoAut, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PBFoto, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -574,6 +611,252 @@ Partial Class UtentesScreen
         Me.TPOutrosDados.Text = "Outros Dados"
         Me.TPOutrosDados.UseVisualStyleBackColor = True
         '
+        'PnlTodosUtentes
+        '
+        Me.PnlTodosUtentes.Controls.Add(Me.DGVTodosUtentes)
+        Me.PnlTodosUtentes.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.PnlTodosUtentes.Location = New System.Drawing.Point(37, 0)
+        Me.PnlTodosUtentes.Name = "PnlTodosUtentes"
+        Me.PnlTodosUtentes.Padding = New System.Windows.Forms.Padding(8)
+        Me.PnlTodosUtentes.Size = New System.Drawing.Size(895, 529)
+        Me.PnlTodosUtentes.TabIndex = 22
+        Me.PnlTodosUtentes.Visible = False
+        '
+        'DGVTodosUtentes
+        '
+        Me.DGVTodosUtentes.AllowUserToAddRows = False
+        Me.DGVTodosUtentes.AllowUserToDeleteRows = False
+        Me.DGVTodosUtentes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DGVTodosUtentes.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.DGVTodosUtentes.Location = New System.Drawing.Point(8, 8)
+        Me.DGVTodosUtentes.MultiSelect = False
+        Me.DGVTodosUtentes.Name = "DGVTodosUtentes"
+        Me.DGVTodosUtentes.ReadOnly = True
+        Me.DGVTodosUtentes.RowHeadersVisible = False
+        Me.DGVTodosUtentes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.DGVTodosUtentes.Size = New System.Drawing.Size(879, 513)
+        Me.DGVTodosUtentes.TabIndex = 0
+        '
+        'PnlStock
+        '
+        Me.PnlStock.Controls.Add(Me.TCStockMain)
+        Me.PnlStock.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.PnlStock.Location = New System.Drawing.Point(37, 0)
+        Me.PnlStock.Name = "PnlStock"
+        Me.PnlStock.Padding = New System.Windows.Forms.Padding(8)
+        Me.PnlStock.Size = New System.Drawing.Size(895, 529)
+        Me.PnlStock.TabIndex = 23
+        Me.PnlStock.Visible = False
+        '
+        'TCStockMain
+        '
+        Me.TCStockMain.Controls.Add(Me.TPArtigosMain)
+        Me.TCStockMain.Controls.Add(Me.TPEntregaMain)
+        Me.TCStockMain.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TCStockMain.Location = New System.Drawing.Point(8, 8)
+        Me.TCStockMain.Name = "TCStockMain"
+        Me.TCStockMain.SelectedIndex = 0
+        Me.TCStockMain.Size = New System.Drawing.Size(879, 513)
+        Me.TCStockMain.TabIndex = 0
+        '
+        'TPArtigosMain
+        '
+        Me.TPArtigosMain.Controls.Add(Me.PnlArtigoButtonsMain)
+        Me.TPArtigosMain.Controls.Add(Me.DGVArtigosMain)
+        Me.TPArtigosMain.Location = New System.Drawing.Point(4, 24)
+        Me.TPArtigosMain.Name = "TPArtigosMain"
+        Me.TPArtigosMain.Size = New System.Drawing.Size(871, 485)
+        Me.TPArtigosMain.TabIndex = 0
+        Me.TPArtigosMain.Text = "Artigos"
+        Me.TPArtigosMain.UseVisualStyleBackColor = True
+        '
+        'DGVArtigosMain
+        '
+        Me.DGVArtigosMain.AllowUserToAddRows = False
+        Me.DGVArtigosMain.AllowUserToDeleteRows = False
+        Me.DGVArtigosMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DGVArtigosMain.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.DGVArtigosMain.Location = New System.Drawing.Point(8, 8)
+        Me.DGVArtigosMain.MultiSelect = False
+        Me.DGVArtigosMain.Name = "DGVArtigosMain"
+        Me.DGVArtigosMain.ReadOnly = True
+        Me.DGVArtigosMain.RowHeadersVisible = False
+        Me.DGVArtigosMain.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.DGVArtigosMain.Size = New System.Drawing.Size(863, 429)
+        Me.DGVArtigosMain.TabIndex = 0
+        '
+        'PnlArtigoButtonsMain
+        '
+        Me.PnlArtigoButtonsMain.Controls.Add(Me.BtnNovoArtigoMain)
+        Me.PnlArtigoButtonsMain.Controls.Add(Me.BtnEntradaStockMain)
+        Me.PnlArtigoButtonsMain.Controls.Add(Me.BtnEliminarArtigoMain)
+        Me.PnlArtigoButtonsMain.Dock = System.Windows.Forms.DockStyle.Bottom
+        Me.PnlArtigoButtonsMain.Location = New System.Drawing.Point(8, 437)
+        Me.PnlArtigoButtonsMain.Name = "PnlArtigoButtonsMain"
+        Me.PnlArtigoButtonsMain.Size = New System.Drawing.Size(863, 48)
+        Me.PnlArtigoButtonsMain.TabIndex = 1
+        '
+        'BtnNovoArtigoMain
+        '
+        Me.BtnNovoArtigoMain.Location = New System.Drawing.Point(0, 6)
+        Me.BtnNovoArtigoMain.Name = "BtnNovoArtigoMain"
+        Me.BtnNovoArtigoMain.Size = New System.Drawing.Size(120, 36)
+        Me.BtnNovoArtigoMain.TabIndex = 0
+        Me.BtnNovoArtigoMain.Text = "Novo Artigo"
+        Me.BtnNovoArtigoMain.UseVisualStyleBackColor = True
+        '
+        'BtnEntradaStockMain
+        '
+        Me.BtnEntradaStockMain.Location = New System.Drawing.Point(126, 6)
+        Me.BtnEntradaStockMain.Name = "BtnEntradaStockMain"
+        Me.BtnEntradaStockMain.Size = New System.Drawing.Size(120, 36)
+        Me.BtnEntradaStockMain.TabIndex = 1
+        Me.BtnEntradaStockMain.Text = "Entrada Stock"
+        Me.BtnEntradaStockMain.UseVisualStyleBackColor = True
+        '
+        'BtnEliminarArtigoMain
+        '
+        Me.BtnEliminarArtigoMain.Location = New System.Drawing.Point(252, 6)
+        Me.BtnEliminarArtigoMain.Name = "BtnEliminarArtigoMain"
+        Me.BtnEliminarArtigoMain.Size = New System.Drawing.Size(120, 36)
+        Me.BtnEliminarArtigoMain.TabIndex = 2
+        Me.BtnEliminarArtigoMain.Text = "Eliminar"
+        Me.BtnEliminarArtigoMain.UseVisualStyleBackColor = True
+        '
+        'TPEntregaMain
+        '
+        Me.TPEntregaMain.Controls.Add(Me.LblCodUtenteEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.TBCodUtenteEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.BtnProcurarUtenteEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.LblNomeUtenteEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.LblArtigoEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.CBArtigoEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.LblQuantidadeEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.NUDQuantidadeEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.LblDtEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.DTPEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.LblObsEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.TBObsEntregaMain)
+        Me.TPEntregaMain.Controls.Add(Me.BtnRegistarEntregaMain)
+        Me.TPEntregaMain.Location = New System.Drawing.Point(4, 24)
+        Me.TPEntregaMain.Name = "TPEntregaMain"
+        Me.TPEntregaMain.Size = New System.Drawing.Size(871, 485)
+        Me.TPEntregaMain.TabIndex = 1
+        Me.TPEntregaMain.Text = "Registar Entrega"
+        Me.TPEntregaMain.UseVisualStyleBackColor = True
+        '
+        'LblCodUtenteEntregaMain
+        '
+        Me.LblCodUtenteEntregaMain.AutoSize = True
+        Me.LblCodUtenteEntregaMain.Location = New System.Drawing.Point(12, 20)
+        Me.LblCodUtenteEntregaMain.Name = "LblCodUtenteEntregaMain"
+        Me.LblCodUtenteEntregaMain.Size = New System.Drawing.Size(120, 13)
+        Me.LblCodUtenteEntregaMain.TabIndex = 0
+        Me.LblCodUtenteEntregaMain.Text = "Cód. Utente (opcional):"
+        '
+        'TBCodUtenteEntregaMain
+        '
+        Me.TBCodUtenteEntregaMain.Location = New System.Drawing.Point(16, 40)
+        Me.TBCodUtenteEntregaMain.Name = "TBCodUtenteEntregaMain"
+        Me.TBCodUtenteEntregaMain.Size = New System.Drawing.Size(100, 20)
+        Me.TBCodUtenteEntregaMain.TabIndex = 1
+        '
+        'BtnProcurarUtenteEntregaMain
+        '
+        Me.BtnProcurarUtenteEntregaMain.Location = New System.Drawing.Point(122, 39)
+        Me.BtnProcurarUtenteEntregaMain.Name = "BtnProcurarUtenteEntregaMain"
+        Me.BtnProcurarUtenteEntregaMain.Size = New System.Drawing.Size(90, 22)
+        Me.BtnProcurarUtenteEntregaMain.TabIndex = 2
+        Me.BtnProcurarUtenteEntregaMain.Text = "Procurar..."
+        Me.BtnProcurarUtenteEntregaMain.UseVisualStyleBackColor = True
+        '
+        'LblNomeUtenteEntregaMain
+        '
+        Me.LblNomeUtenteEntregaMain.AutoSize = True
+        Me.LblNomeUtenteEntregaMain.Location = New System.Drawing.Point(230, 44)
+        Me.LblNomeUtenteEntregaMain.Name = "LblNomeUtenteEntregaMain"
+        Me.LblNomeUtenteEntregaMain.Size = New System.Drawing.Size(0, 13)
+        Me.LblNomeUtenteEntregaMain.TabIndex = 3
+        '
+        'LblArtigoEntregaMain
+        '
+        Me.LblArtigoEntregaMain.AutoSize = True
+        Me.LblArtigoEntregaMain.Location = New System.Drawing.Point(12, 80)
+        Me.LblArtigoEntregaMain.Name = "LblArtigoEntregaMain"
+        Me.LblArtigoEntregaMain.Size = New System.Drawing.Size(40, 13)
+        Me.LblArtigoEntregaMain.TabIndex = 4
+        Me.LblArtigoEntregaMain.Text = "Artigo:"
+        '
+        'CBArtigoEntregaMain
+        '
+        Me.CBArtigoEntregaMain.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CBArtigoEntregaMain.FormattingEnabled = True
+        Me.CBArtigoEntregaMain.Location = New System.Drawing.Point(16, 96)
+        Me.CBArtigoEntregaMain.Name = "CBArtigoEntregaMain"
+        Me.CBArtigoEntregaMain.Size = New System.Drawing.Size(300, 21)
+        Me.CBArtigoEntregaMain.TabIndex = 5
+        '
+        'LblQuantidadeEntregaMain
+        '
+        Me.LblQuantidadeEntregaMain.AutoSize = True
+        Me.LblQuantidadeEntregaMain.Location = New System.Drawing.Point(12, 135)
+        Me.LblQuantidadeEntregaMain.Name = "LblQuantidadeEntregaMain"
+        Me.LblQuantidadeEntregaMain.Size = New System.Drawing.Size(66, 13)
+        Me.LblQuantidadeEntregaMain.TabIndex = 6
+        Me.LblQuantidadeEntregaMain.Text = "Quantidade:"
+        '
+        'NUDQuantidadeEntregaMain
+        '
+        Me.NUDQuantidadeEntregaMain.DecimalPlaces = 2
+        Me.NUDQuantidadeEntregaMain.Location = New System.Drawing.Point(16, 151)
+        Me.NUDQuantidadeEntregaMain.Maximum = New Decimal(New Integer() {1000000, 0, 0, 0})
+        Me.NUDQuantidadeEntregaMain.Name = "NUDQuantidadeEntregaMain"
+        Me.NUDQuantidadeEntregaMain.Size = New System.Drawing.Size(120, 20)
+        Me.NUDQuantidadeEntregaMain.TabIndex = 7
+        '
+        'LblDtEntregaMain
+        '
+        Me.LblDtEntregaMain.AutoSize = True
+        Me.LblDtEntregaMain.Location = New System.Drawing.Point(12, 190)
+        Me.LblDtEntregaMain.Name = "LblDtEntregaMain"
+        Me.LblDtEntregaMain.Size = New System.Drawing.Size(80, 13)
+        Me.LblDtEntregaMain.TabIndex = 8
+        Me.LblDtEntregaMain.Text = "Data Entrega:"
+        '
+        'DTPEntregaMain
+        '
+        Me.DTPEntregaMain.Format = System.Windows.Forms.DateTimePickerFormat.Short
+        Me.DTPEntregaMain.Location = New System.Drawing.Point(16, 206)
+        Me.DTPEntregaMain.Name = "DTPEntregaMain"
+        Me.DTPEntregaMain.Size = New System.Drawing.Size(120, 20)
+        Me.DTPEntregaMain.TabIndex = 9
+        '
+        'LblObsEntregaMain
+        '
+        Me.LblObsEntregaMain.AutoSize = True
+        Me.LblObsEntregaMain.Location = New System.Drawing.Point(12, 245)
+        Me.LblObsEntregaMain.Name = "LblObsEntregaMain"
+        Me.LblObsEntregaMain.Size = New System.Drawing.Size(75, 13)
+        Me.LblObsEntregaMain.TabIndex = 10
+        Me.LblObsEntregaMain.Text = "Observações:"
+        '
+        'TBObsEntregaMain
+        '
+        Me.TBObsEntregaMain.Location = New System.Drawing.Point(16, 261)
+        Me.TBObsEntregaMain.Multiline = True
+        Me.TBObsEntregaMain.Name = "TBObsEntregaMain"
+        Me.TBObsEntregaMain.Size = New System.Drawing.Size(400, 60)
+        Me.TBObsEntregaMain.TabIndex = 11
+        '
+        'BtnRegistarEntregaMain
+        '
+        Me.BtnRegistarEntregaMain.Location = New System.Drawing.Point(16, 340)
+        Me.BtnRegistarEntregaMain.Name = "BtnRegistarEntregaMain"
+        Me.BtnRegistarEntregaMain.Size = New System.Drawing.Size(160, 35)
+        Me.BtnRegistarEntregaMain.TabIndex = 12
+        Me.BtnRegistarEntregaMain.Text = "Registar Entrega"
+        Me.BtnRegistarEntregaMain.UseVisualStyleBackColor = True
+        '
         'GroupBox3
         '
         Me.GroupBox3.Controls.Add(Me.TBDtSaida)
@@ -698,7 +981,7 @@ Partial Class UtentesScreen
         Me.BtnVerStock.Name = "BtnVerStock"
         Me.BtnVerStock.Size = New System.Drawing.Size(206, 40)
         Me.BtnVerStock.TabIndex = 0
-        Me.BtnVerStock.Text = "Ver / Registar Entregas"
+        Me.BtnVerStock.Text = "Histórico / Saída de Stock"
         Me.BtnVerStock.UseVisualStyleBackColor = True
         '
         'TSBotoes
@@ -706,7 +989,7 @@ Partial Class UtentesScreen
         Me.TSBotoes.BackColor = System.Drawing.SystemColors.ButtonShadow
         Me.TSBotoes.Dock = System.Windows.Forms.DockStyle.Left
         Me.TSBotoes.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao})
+        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao, Me.ToolStripSeparator5, Me.BtnNavFicha, Me.BtnNavTodosUtentes, Me.BtnNavStock})
         Me.TSBotoes.Location = New System.Drawing.Point(0, 0)
         Me.TSBotoes.Name = "TSBotoes"
         Me.TSBotoes.Size = New System.Drawing.Size(37, 529)
@@ -827,6 +1110,41 @@ Partial Class UtentesScreen
         Me.BtnImprimirCartao.Text = "ToolStripButton4"
         Me.BtnImprimirCartao.ToolTipText = "Imprimir Cartão"
         '
+        'ToolStripSeparator5
+        '
+        Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
+        Me.ToolStripSeparator5.Size = New System.Drawing.Size(34, 6)
+        '
+        'BtnNavFicha
+        '
+        Me.BtnNavFicha.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.BtnNavFicha.Image = Global.GAF.My.Resources.Resource1.icons8_identification_documents_48
+        Me.BtnNavFicha.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.BtnNavFicha.Name = "BtnNavFicha"
+        Me.BtnNavFicha.Size = New System.Drawing.Size(34, 36)
+        Me.BtnNavFicha.Text = "Ficha Utente"
+        Me.BtnNavFicha.ToolTipText = "Ficha Utente"
+        '
+        'BtnNavTodosUtentes
+        '
+        Me.BtnNavTodosUtentes.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.BtnNavTodosUtentes.Image = Global.GAF.My.Resources.Resource1.icons8_find_user_male_24
+        Me.BtnNavTodosUtentes.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.BtnNavTodosUtentes.Name = "BtnNavTodosUtentes"
+        Me.BtnNavTodosUtentes.Size = New System.Drawing.Size(34, 36)
+        Me.BtnNavTodosUtentes.Text = "Todos os Utentes"
+        Me.BtnNavTodosUtentes.ToolTipText = "Todos os Utentes"
+        '
+        'BtnNavStock
+        '
+        Me.BtnNavStock.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.BtnNavStock.Image = Global.GAF.My.Resources.Resource1.icons8_buying_48
+        Me.BtnNavStock.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.BtnNavStock.Name = "BtnNavStock"
+        Me.BtnNavStock.Size = New System.Drawing.Size(34, 36)
+        Me.BtnNavStock.Text = "Stock"
+        Me.BtnNavStock.ToolTipText = "Stock"
+        '
         'PBFotoAut
         '
         Me.PBFotoAut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
@@ -873,6 +1191,8 @@ Partial Class UtentesScreen
         Me.Controls.Add(Me.PBFoto)
         Me.Controls.Add(Me.LblCodUtente)
         Me.Controls.Add(Me.TBCodUtente)
+        Me.Controls.Add(Me.PnlTodosUtentes)
+        Me.Controls.Add(Me.PnlStock)
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "UtentesScreen"
         Me.Text = "Utentes"
@@ -890,6 +1210,16 @@ Partial Class UtentesScreen
         Me.TSBotoes.PerformLayout()
         Me.GroupBox4.ResumeLayout(False)
         Me.GroupBox4.PerformLayout()
+        Me.PnlTodosUtentes.ResumeLayout(False)
+        CType(Me.DGVTodosUtentes, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.PnlStock.ResumeLayout(False)
+        Me.TCStockMain.ResumeLayout(False)
+        Me.TPArtigosMain.ResumeLayout(False)
+        CType(Me.DGVArtigosMain, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.PnlArtigoButtonsMain.ResumeLayout(False)
+        Me.TPEntregaMain.ResumeLayout(False)
+        Me.TPEntregaMain.PerformLayout()
+        CType(Me.NUDQuantidadeEntregaMain, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PBFotoAut, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PBFoto, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
@@ -968,4 +1298,32 @@ Partial Class UtentesScreen
     Friend WithEvents Label19 As Label
     Friend WithEvents OPDFotoAut As OpenFileDialog
     Friend WithEvents BtnPesquisarUtentes As Button
+    Friend WithEvents ToolStripSeparator5 As ToolStripSeparator
+    Friend WithEvents BtnNavFicha As ToolStripButton
+    Friend WithEvents BtnNavTodosUtentes As ToolStripButton
+    Friend WithEvents BtnNavStock As ToolStripButton
+    Friend WithEvents PnlTodosUtentes As Panel
+    Friend WithEvents DGVTodosUtentes As DataGridView
+    Friend WithEvents PnlStock As Panel
+    Friend WithEvents DGVArtigosMain As DataGridView
+    Friend WithEvents PnlArtigoButtonsMain As Panel
+    Friend WithEvents BtnNovoArtigoMain As Button
+    Friend WithEvents BtnEntradaStockMain As Button
+    Friend WithEvents BtnEliminarArtigoMain As Button
+    Friend WithEvents TCStockMain As TabControl
+    Friend WithEvents TPArtigosMain As TabPage
+    Friend WithEvents TPEntregaMain As TabPage
+    Friend WithEvents LblCodUtenteEntregaMain As Label
+    Friend WithEvents TBCodUtenteEntregaMain As TextBox
+    Friend WithEvents BtnProcurarUtenteEntregaMain As Button
+    Friend WithEvents LblNomeUtenteEntregaMain As Label
+    Friend WithEvents LblArtigoEntregaMain As Label
+    Friend WithEvents CBArtigoEntregaMain As ComboBox
+    Friend WithEvents LblQuantidadeEntregaMain As Label
+    Friend WithEvents NUDQuantidadeEntregaMain As NumericUpDown
+    Friend WithEvents LblDtEntregaMain As Label
+    Friend WithEvents DTPEntregaMain As DateTimePicker
+    Friend WithEvents LblObsEntregaMain As Label
+    Friend WithEvents TBObsEntregaMain As TextBox
+    Friend WithEvents BtnRegistarEntregaMain As Button
 End Class

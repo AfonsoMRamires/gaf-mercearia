@@ -233,6 +233,27 @@ Public Class Utentes
         Return dt
     End Function
 
+    Public Function GetAllUtentes(ByRef returnCode As Boolean, ByRef Message As String) As DataTable
+        Dim dt As New DataTable
+        Try
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand(
+                    "SELECT codUtente, nome, autorizado, ativo FROM Utentes ORDER BY ativo DESC, nome", conn)
+                    conn.Open()
+                    Using da As New SqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+            returnCode = True
+        Catch ex As Exception
+            Message = "Erro Método GetAllUtentes: " & ex.Message
+            AppLogger.Error("GetAllUtentes", ex)
+            returnCode = False
+        End Try
+        Return dt
+    End Function
+
     Public Function ReadUtente(ByVal codUtente As String, ByRef returnCode As Boolean, ByRef Message As String) As UtentesObj
 
         Dim UtentesOut As UtentesObj = New UtentesObj
