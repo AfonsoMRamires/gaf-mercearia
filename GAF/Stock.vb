@@ -28,6 +28,18 @@ Public Class Stock
         Public obs As String = String.Empty
     End Class
 
+    ' Stock a Utente leaves with, registered without going through a formal
+    ' Entrega. codUtente is required — who took it must always be on record.
+    Public Class SaidaObj
+        Public codSaida As Integer = 0
+        Public codArtigo As Integer = 0
+        Public quantidade As Decimal = 0
+        Public dtSaida As Date = Date.Today
+        Public motivo As String = String.Empty
+        Public utilizador As String = String.Empty
+        Public codUtente As String = String.Empty
+    End Class
+
     ' ── Schema bootstrap ──────────────────────────────────────────────────────
     ' Idempotent: creates Artigos and Entregas tables if they do not yet exist.
     ' Called on application startup.
@@ -56,7 +68,7 @@ Public Class Stock
                     "BEGIN " &
                     "CREATE TABLE Entregas (" &
                     "codEntrega INT NOT NULL IDENTITY(1,1) PRIMARY KEY, " &
-                    "codUtente CHAR(4) NOT NULL, " &
+                    "codUtente CHAR(4) NULL, " &
                     "codArtigo INT NOT NULL, " &
                     "quantidade DECIMAL(10,2) NOT NULL, " &
                     "dtEntrega DATE NOT NULL DEFAULT GETDATE(), " &
@@ -64,6 +76,23 @@ Public Class Stock
                     "obs NVARCHAR(500) NOT NULL DEFAULT '', " &
                     "CONSTRAINT FK_Entregas_Utentes FOREIGN KEY (codUtente) REFERENCES Utentes(codUtente), " &
                     "CONSTRAINT FK_Entregas_Artigos FOREIGN KEY (codArtigo) REFERENCES Artigos(codArtigo)) " &
+                    "END", conn)
+                    cmd.ExecuteNonQuery()
+                End Using
+
+                Using cmd As New SqlCommand(
+                    "IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='SaidasStock') " &
+                    "BEGIN " &
+                    "CREATE TABLE SaidasStock (" &
+                    "codSaida INT NOT NULL IDENTITY(1,1) PRIMARY KEY, " &
+                    "codArtigo INT NOT NULL, " &
+                    "quantidade DECIMAL(10,2) NOT NULL, " &
+                    "dtSaida DATE NOT NULL DEFAULT GETDATE(), " &
+                    "motivo NVARCHAR(200) NOT NULL DEFAULT '', " &
+                    "utilizador NVARCHAR(50) NOT NULL DEFAULT '', " &
+                    "codUtente CHAR(4) NULL, " &
+                    "CONSTRAINT FK_SaidasStock_Artigos FOREIGN KEY (codArtigo) REFERENCES Artigos(codArtigo), " &
+                    "CONSTRAINT FK_SaidasStock_Utentes FOREIGN KEY (codUtente) REFERENCES Utentes(codUtente)) " &
                     "END", conn)
                     cmd.ExecuteNonQuery()
                 End Using
@@ -97,6 +126,30 @@ Public Class Stock
         Catch ex As Exception
             Message = "Erro Método AddArtigo: " & ex.Message
             AppLogger.Error("AddArtigo", ex)
+            Return False
+        End Try
+    End Function
+
+    ' Hard delete. Blocked by the FK constraints on Entregas/SaidasStock if the
+    ' artigo already has movements — caller should mark it inactive instead.
+    Public Function DeleteArtigo(ByVal codArtigo As Integer, ByRef Message As String) As Boolean
+        Try
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand("DELETE FROM Artigos WHERE codArtigo = @codArtigo", conn)
+                    cmd.Parameters.AddWithValue("@codArtigo", codArtigo)
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+            Message = "Artigo eliminado com sucesso"
+            AppLogger.Info("DeleteArtigo", "Eliminado cod=" & codArtigo)
+            Return True
+        Catch ex As SqlException When ex.Number = 547
+            Message = "Não é possível eliminar: este artigo já tem entradas, entregas ou saídas registadas. Torne-o inativo em vez de eliminar."
+            Return False
+        Catch ex As Exception
+            Message = "Erro Método DeleteArtigo: " & ex.Message
+            AppLogger.Error("DeleteArtigo", ex)
             Return False
         End Try
     End Function
@@ -137,7 +190,7 @@ Public Class Stock
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 Using cmd As New SqlCommand(
                     "SELECT codArtigo, descricao, unidade, stockAtual, stockMinimo, ativo, obs " &
-                    "FROM Artigos ORDER BY descricao", conn)
+                    "FROM Artigos ORDER BY ativo DESC, descricao", conn)
                     conn.Open()
                     Using da As New SqlDataAdapter(cmd)
                         da.Fill(dt)
@@ -177,10 +230,12 @@ Public Class Stock
         End Try
     End Function
 
-    ' Records a delivery to a client atomically: insert Entregas row, decrement
-    ' item stock, and update the client's ultimaEntrega cache. All-or-nothing.
+    ' Records a delivery atomically: insert Entregas row, decrement item stock,
+    ' and (when a Utente is given — it's optional) update their ultimaEntrega
+    ' cache. All-or-nothing.
     Public Function RegistarEntrega(ByVal e As EntregaObj, ByRef Message As String) As Boolean
         Try
+            Dim temUtente As Boolean = e.codUtente.Trim() <> String.Empty
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 conn.Open()
                 Using tx As SqlTransaction = conn.BeginTransaction()
@@ -188,7 +243,11 @@ Public Class Stock
                         Using cmd As New SqlCommand(
                             "INSERT INTO Entregas (codUtente, codArtigo, quantidade, dtEntrega, utilizador, obs) " &
                             "VALUES (@codUtente, @codArtigo, @quantidade, @dtEntrega, @utilizador, @obs)", conn, tx)
-                            cmd.Parameters.AddWithValue("@codUtente", e.codUtente)
+                            If temUtente Then
+                                cmd.Parameters.AddWithValue("@codUtente", e.codUtente.Trim())
+                            Else
+                                cmd.Parameters.AddWithValue("@codUtente", DBNull.Value)
+                            End If
                             cmd.Parameters.AddWithValue("@codArtigo", e.codArtigo)
                             cmd.Parameters.AddWithValue("@quantidade", e.quantidade)
                             cmd.Parameters.AddWithValue("@dtEntrega", e.dtEntrega.ToString("yyyy-MM-dd"))
@@ -209,12 +268,14 @@ Public Class Stock
                             End If
                         End Using
 
-                        Using cmd As New SqlCommand(
-                            "UPDATE Utentes SET ultimaEntrega = @dtEntrega WHERE codUtente = @codUtente", conn, tx)
-                            cmd.Parameters.AddWithValue("@dtEntrega", e.dtEntrega.ToString("yyyy-MM-dd"))
-                            cmd.Parameters.AddWithValue("@codUtente", e.codUtente)
-                            cmd.ExecuteNonQuery()
-                        End Using
+                        If temUtente Then
+                            Using cmd As New SqlCommand(
+                                "UPDATE Utentes SET ultimaEntrega = @dtEntrega WHERE codUtente = @codUtente", conn, tx)
+                                cmd.Parameters.AddWithValue("@dtEntrega", e.dtEntrega.ToString("yyyy-MM-dd"))
+                                cmd.Parameters.AddWithValue("@codUtente", e.codUtente.Trim())
+                                cmd.ExecuteNonQuery()
+                            End Using
+                        End If
 
                         tx.Commit()
                     Catch exInner As Exception
@@ -254,6 +315,95 @@ Public Class Stock
         Catch ex As Exception
             Message = "Erro Método GetEntregasByUtente: " & ex.Message
             AppLogger.Error("GetEntregasByUtente", ex)
+            returnCode = False
+        End Try
+        Return dt
+    End Function
+
+    ' ── Saídas de stock (sem entrega a Utente) ─────────────────────────────────
+    ' Records stock leaving for a reason other than a delivery (perda, consumo
+    ' interno, correção de inventário, etc.). Same guarded-decrement pattern as
+    ' RegistarEntrega, just without the Utente side.
+    Public Function RegistarSaida(ByVal s As SaidaObj, ByRef Message As String) As Boolean
+        Try
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                conn.Open()
+                Using tx As SqlTransaction = conn.BeginTransaction()
+                    Try
+                        Using cmd As New SqlCommand(
+                            "INSERT INTO SaidasStock (codArtigo, quantidade, dtSaida, motivo, utilizador, codUtente) " &
+                            "VALUES (@codArtigo, @quantidade, @dtSaida, @motivo, @utilizador, @codUtente)", conn, tx)
+                            cmd.Parameters.AddWithValue("@codArtigo", s.codArtigo)
+                            cmd.Parameters.AddWithValue("@quantidade", s.quantidade)
+                            cmd.Parameters.AddWithValue("@dtSaida", s.dtSaida.ToString("yyyy-MM-dd"))
+                            cmd.Parameters.AddWithValue("@motivo", s.motivo)
+                            cmd.Parameters.AddWithValue("@utilizador", s.utilizador)
+                            If s.codUtente.Trim() = String.Empty Then
+                                cmd.Parameters.AddWithValue("@codUtente", DBNull.Value)
+                            Else
+                                cmd.Parameters.AddWithValue("@codUtente", s.codUtente.Trim())
+                            End If
+                            cmd.ExecuteNonQuery()
+                        End Using
+
+                        Using cmd As New SqlCommand(
+                            "UPDATE Artigos SET stockAtual = stockAtual - @quantidade " &
+                            "WHERE codArtigo = @codArtigo AND stockAtual >= @quantidade", conn, tx)
+                            cmd.Parameters.AddWithValue("@quantidade", s.quantidade)
+                            cmd.Parameters.AddWithValue("@codArtigo", s.codArtigo)
+                            If cmd.ExecuteNonQuery() = 0 Then
+                                Throw New Exception("Stock insuficiente para a quantidade indicada")
+                            End If
+                        End Using
+
+                        tx.Commit()
+                    Catch exInner As Exception
+                        tx.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
+            Message = "Saída de stock registada"
+            AppLogger.Info("RegistarSaida", "Artigo=" & s.codArtigo & " Qtd=" & s.quantidade.ToString() & " Motivo=" & s.motivo)
+            Return True
+        Catch ex As Exception
+            Message = "Erro Método RegistarSaida: " & ex.Message
+            AppLogger.Error("RegistarSaida", ex)
+            Return False
+        End Try
+    End Function
+
+    ' ── Histórico combinado (Entregas + Saídas atribuídas a este Utente) ───────
+    ' Both movement types for one Utente, tagged with Tipo so the caller can
+    ' filter by date / descrição / tipo over a single in-memory DataTable.
+    Public Function GetHistoricoUtente(ByVal codUtente As String,
+                                       ByRef returnCode As Boolean,
+                                       ByRef Message As String) As DataTable
+        Dim dt As New DataTable
+        Try
+            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
+                Using cmd As New SqlCommand(
+                    "SELECT 'Entrega' AS Tipo, e.dtEntrega AS Data, a.descricao AS Descricao, " &
+                    "a.unidade AS Unidade, e.quantidade AS Quantidade, e.obs AS Motivo, e.utilizador AS Utilizador " &
+                    "FROM Entregas e INNER JOIN Artigos a ON e.codArtigo = a.codArtigo " &
+                    "WHERE e.codUtente = @codUtente " &
+                    "UNION ALL " &
+                    "SELECT 'Saída' AS Tipo, s.dtSaida AS Data, a.descricao AS Descricao, " &
+                    "a.unidade AS Unidade, s.quantidade AS Quantidade, s.motivo AS Motivo, s.utilizador AS Utilizador " &
+                    "FROM SaidasStock s INNER JOIN Artigos a ON s.codArtigo = a.codArtigo " &
+                    "WHERE s.codUtente = @codUtente " &
+                    "ORDER BY Data DESC", conn)
+                    cmd.Parameters.AddWithValue("@codUtente", codUtente)
+                    conn.Open()
+                    Using da As New SqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+            returnCode = True
+        Catch ex As Exception
+            Message = "Erro Método GetHistoricoUtente: " & ex.Message
+            AppLogger.Error("GetHistoricoUtente", ex)
             returnCode = False
         End Try
         Return dt

@@ -2,6 +2,7 @@
 Public Class UtentesScreen
 
     Dim Utentes As Utentes = New Utentes
+    Dim Stock As Stock = New Stock
     Dim returnCode As Boolean = False
     Dim Message As String = String.Empty
     Dim UtentesObj As Utentes.UtentesObj = New Utentes.UtentesObj
@@ -29,7 +30,228 @@ Public Class UtentesScreen
         AppLogger.Info("UtentesScreen", "Aplicação iniciada")
         Stock.EnsureSchema()
 
+        LoadTodosUtentes()
+        LoadArtigosMain()
+        LoadArtigosEntregaComboMain()
+        DTPEntregaMain.Value = Date.Today
+
         setScreen("I")
+    End Sub
+
+    ' ── Left menu navigation (Ficha Utente / Todos os Utentes / Stock) ──────────
+    ' Ficha Utente's own controls stay on the form as-is; these two overlay
+    ' panels just cover them (Dock=Fill, topmost) when shown.
+    Private Sub ShowFicha()
+        PnlTodosUtentes.Visible = False
+        PnlStock.Visible = False
+    End Sub
+
+    Private Sub BtnNavFicha_Click(sender As Object, e As EventArgs) Handles BtnNavFicha.Click
+        ShowFicha()
+    End Sub
+
+    Private Sub BtnNavTodosUtentes_Click(sender As Object, e As EventArgs) Handles BtnNavTodosUtentes.Click
+        LoadTodosUtentes()
+        PnlStock.Visible = False
+        PnlTodosUtentes.Visible = True
+        PnlTodosUtentes.BringToFront()
+    End Sub
+
+    Private Sub BtnNavStock_Click(sender As Object, e As EventArgs) Handles BtnNavStock.Click
+        LoadArtigosMain()
+        LoadArtigosEntregaComboMain()
+        PnlTodosUtentes.Visible = False
+        PnlStock.Visible = True
+        PnlStock.BringToFront()
+    End Sub
+
+    ' ── Todos os Utentes overlay ──────────────────────────────────────────────────
+    Private Sub LoadTodosUtentes()
+        Dim dt As DataTable = Utentes.GetAllUtentes(returnCode, Message)
+        If returnCode Then
+            DGVTodosUtentes.DataSource = dt
+        Else
+            MsgBox(Message)
+        End If
+    End Sub
+
+    Private Sub DGVTodosUtentes_DoubleClick(sender As Object, e As EventArgs) Handles DGVTodosUtentes.DoubleClick
+        If DGVTodosUtentes.SelectedRows.Count = 0 Then Return
+        Dim codUtenteSel As String = DGVTodosUtentes.SelectedRows(0).Cells("codUtente").Value.ToString()
+        setCodUtente(codUtenteSel)
+        ShowFicha()
+    End Sub
+
+    ' ── Stock overlay (manage articles + receive stock; no delivery/saída here) ─
+    Private Sub LoadArtigosMain()
+        Dim dt As DataTable = Stock.GetArtigos(returnCode, Message)
+        If returnCode Then
+            DGVArtigosMain.DataSource = dt
+            HighlightLowStockMain()
+        Else
+            MsgBox(Message)
+        End If
+    End Sub
+
+    Private Sub HighlightLowStockMain()
+        For Each row As DataGridViewRow In DGVArtigosMain.Rows
+            Dim stockAtual As Decimal = CDec(row.Cells("stockAtual").Value)
+            Dim stockMinimo As Decimal = CDec(row.Cells("stockMinimo").Value)
+            If stockAtual < stockMinimo Then
+                row.DefaultCellStyle.BackColor = Color.FromArgb(255, 220, 220)
+            End If
+        Next
+    End Sub
+
+    ' Returns 0 if no row is selected.
+    Private Function GetSelectedArtigoMain() As Stock.ArtigoObj
+        If DGVArtigosMain.SelectedRows.Count = 0 Then Return New Stock.ArtigoObj
+        Dim row As DataGridViewRow = DGVArtigosMain.SelectedRows(0)
+        If row.IsNewRow OrElse row.Cells("codArtigo").Value Is Nothing Then Return New Stock.ArtigoObj
+
+        Return New Stock.ArtigoObj With {
+            .codArtigo = CInt(row.Cells("codArtigo").Value),
+            .descricao = row.Cells("descricao").Value.ToString(),
+            .unidade = row.Cells("unidade").Value.ToString(),
+            .stockMinimo = CDec(row.Cells("stockMinimo").Value),
+            .ativo = CBool(row.Cells("ativo").Value),
+            .obs = row.Cells("obs").Value.ToString()
+        }
+    End Function
+
+    Private Sub DGVArtigosMain_DoubleClick(sender As Object, e As EventArgs) Handles DGVArtigosMain.DoubleClick
+        Dim a As Stock.ArtigoObj = GetSelectedArtigoMain()
+        If a.codArtigo = 0 Then Return
+        OpenArtigoModal(a)
+    End Sub
+
+    Private Sub BtnNovoArtigoMain_Click(sender As Object, e As EventArgs) Handles BtnNovoArtigoMain.Click
+        OpenArtigoModal(New Stock.ArtigoObj)
+    End Sub
+
+    Private Sub OpenArtigoModal(ByVal a As Stock.ArtigoObj)
+        Dim frm As New ArtigoModal()
+        frm.LoadArtigo(a)
+        If frm.ShowDialog() = DialogResult.OK Then
+            Dim result As Stock.ArtigoObj = frm.GetArtigo()
+            Dim ok As Boolean
+            If a.codArtigo = 0 Then
+                ok = Stock.AddArtigo(result, Message)
+            Else
+                ok = Stock.ModArtigo(result, Message)
+            End If
+            MsgBox(Message)
+            If ok Then
+                LoadArtigosMain()
+                LoadArtigosEntregaComboMain()
+            End If
+        End If
+    End Sub
+
+    Private Sub BtnEliminarArtigoMain_Click(sender As Object, e As EventArgs) Handles BtnEliminarArtigoMain.Click
+        Dim a As Stock.ArtigoObj = GetSelectedArtigoMain()
+        If a.codArtigo = 0 Then
+            MsgBox("Selecione um artigo na lista")
+            Return
+        End If
+
+        If MsgBox("Eliminar o artigo '" & a.descricao & "'?", MsgBoxStyle.YesNo Or MsgBoxStyle.Question, "Confirmar") <> MsgBoxResult.Yes Then
+            Return
+        End If
+
+        If Stock.DeleteArtigo(a.codArtigo, Message) Then
+            LoadArtigosMain()
+            LoadArtigosEntregaComboMain()
+        End If
+        MsgBox(Message)
+    End Sub
+
+    Private Sub BtnEntradaStockMain_Click(sender As Object, e As EventArgs) Handles BtnEntradaStockMain.Click
+        Dim a As Stock.ArtigoObj = GetSelectedArtigoMain()
+        If a.codArtigo = 0 Then
+            MsgBox("Selecione um artigo na lista para dar entrada de stock")
+            Return
+        End If
+
+        Dim resposta As String = InputBox("Quantidade a dar entrada:", "Entrada de Stock", "0")
+        If resposta = String.Empty Then Return
+
+        Dim qtd As Decimal
+        If Not Decimal.TryParse(resposta, qtd) OrElse qtd <= 0 Then
+            MsgBox("Quantidade inválida")
+            Return
+        End If
+
+        If Stock.EntradaStock(a.codArtigo, qtd, Message) Then
+            LoadArtigosMain()
+        End If
+        MsgBox(Message)
+    End Sub
+
+    ' ── Stock overlay: Registar Entrega (operator-managed delivery) ─────────────
+    Private Sub LoadArtigosEntregaComboMain()
+        Dim dt As DataTable = Stock.GetArtigos(returnCode, Message)
+        If returnCode Then
+            CBArtigoEntregaMain.DataSource = dt
+            CBArtigoEntregaMain.DisplayMember = "descricao"
+            CBArtigoEntregaMain.ValueMember = "codArtigo"
+            CBArtigoEntregaMain.SelectedIndex = -1
+        End If
+    End Sub
+
+    Private Sub LookupNomeUtenteEntregaMain(ByVal codUtente As String)
+        If codUtente.Trim() = String.Empty Then
+            LblNomeUtenteEntregaMain.Text = String.Empty
+            Return
+        End If
+        Dim u As Utentes.UtentesObj = New Utentes().ReadUtente(codUtente, returnCode, Message)
+        If returnCode Then
+            LblNomeUtenteEntregaMain.Text = u.nome
+        Else
+            LblNomeUtenteEntregaMain.Text = "(não encontrado)"
+        End If
+    End Sub
+
+    Private Sub BtnProcurarUtenteEntregaMain_Click(sender As Object, e As EventArgs) Handles BtnProcurarUtenteEntregaMain.Click
+        LookupNomeUtenteEntregaMain(TBCodUtenteEntregaMain.Text)
+    End Sub
+
+    Private Sub BtnRegistarEntregaMain_Click(sender As Object, e As EventArgs) Handles BtnRegistarEntregaMain.Click
+        If CBArtigoEntregaMain.SelectedValue Is Nothing Then
+            MsgBox("Selecione um artigo")
+            Return
+        End If
+        If NUDQuantidadeEntregaMain.Value <= 0 Then
+            MsgBox("Quantidade tem de ser maior que zero")
+            Return
+        End If
+
+        Dim codUtenteEntrega As String = TBCodUtenteEntregaMain.Text.Trim()
+        If codUtenteEntrega <> String.Empty Then
+            ' Utente is optional here, but if one was given it must be real.
+            LookupNomeUtenteEntregaMain(codUtenteEntrega)
+            If Not returnCode Then
+                MsgBox("Utente não encontrado")
+                Return
+            End If
+        End If
+
+        Dim ent As New Stock.EntregaObj With {
+            .codUtente = codUtenteEntrega,
+            .codArtigo = CInt(CBArtigoEntregaMain.SelectedValue),
+            .quantidade = NUDQuantidadeEntregaMain.Value,
+            .dtEntrega = DTPEntregaMain.Value.Date,
+            .utilizador = Environment.UserName,
+            .obs = TBObsEntregaMain.Text
+        }
+
+        If Stock.RegistarEntrega(ent, Message) Then
+            NUDQuantidadeEntregaMain.Value = 0
+            TBObsEntregaMain.Text = String.Empty
+            LoadArtigosMain()
+            LoadArtigosEntregaComboMain()
+        End If
+        MsgBox(Message)
     End Sub
 
     Private Sub UtentesScreen_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
@@ -134,7 +356,7 @@ Public Class UtentesScreen
         If UtentesObj.dataNasc = Nothing Then
             TBDataNasc.Text = String.Empty
         Else
-            TBDataNasc.Text = UtentesObj.dataNasc
+            TBDataNasc.Text = Format(UtentesObj.dataNasc, "dd/MM/yyyy")
         End If
         TBTelefone.Text = UtentesObj.telefone
         TBTelemovel.Text = UtentesObj.telemovel
@@ -145,13 +367,13 @@ Public Class UtentesScreen
         If UtentesObj.dataEntrada = Nothing Then
             TBDtEntrada.Text = String.Empty
         Else
-            TBDtEntrada.Text = UtentesObj.dataEntrada
+            TBDtEntrada.Text = Format(UtentesObj.dataEntrada, "dd/MM/yyyy")
         End If
 
         If UtentesObj.dataSaida = Nothing Then
             TBDtSaida.Text = String.Empty
         Else
-            TBDtSaida.Text = UtentesObj.dataSaida
+            TBDtSaida.Text = Format(UtentesObj.dataSaida, "dd/MM/yyyy")
         End If
 
 
@@ -339,10 +561,12 @@ Public Class UtentesScreen
                 Case "C"
                     If Utentes.AddUtente(getScreenFields(), Message) Then
                         setScreen("R")
+                        LoadTodosUtentes()
                     End If
                 Case "M"
                     If Utentes.ModUtente(getScreenFields(), Message) Then
                         setScreen("R")
+                        LoadTodosUtentes()
                     End If
                 Case Else
 
