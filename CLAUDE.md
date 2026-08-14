@@ -27,10 +27,14 @@ No test suite exists — there is nothing to run beyond a successful build.
 ### Database is required before the app runs
 
 `GAF.mdf`/`GAF_log.ldf` are gitignored and not in the repo (`CopyToOutputDirectory=Always`
-copies them into the build output). The app auto-creates `Artigos` and `Entregas` on
-startup (`Stock.EnsureSchema`) but does **not** create `Utentes` — that table must
-already exist in whatever `GAF.mdf` you supply. See `RUN.md` for full setup
-(LocalDB install, column list/types for `Utentes`, troubleshooting table).
+copies them into the build output). The app auto-creates `Artigos`, `Entregas`,
+`SaidasStock` and `Notas` on startup (`Stock.EnsureSchema`) but does **not** create
+`Utentes` — that table must already exist in whatever `GAF.mdf` you supply.
+`EnsureSchema` also runs a few idempotent `ALTER TABLE` self-heal checks (e.g.
+relaxing `Entregas.codUtente` to nullable, adding `SaidasStock.codUtente` +
+its FK) for DBs created before those columns existed — it only ever creates
+missing tables/columns, never drops or alters existing data. See `RUN.md` for
+full setup (LocalDB install, column list/types for `Utentes`, troubleshooting table).
 
 Key gotcha from `RUN.md`: `Utentes.AddUtente` does `INSERT INTO Utentes VALUES (...)`
 with no column list, so the physical column order in the table must match the order
@@ -42,12 +46,18 @@ avoids min-value edge cases entirely).
 
 Three-layer split, all in the single `GAF` project:
 
-- **Forms** (`UtentesScreen.vb`, `StockScreen.vb`, `PesquisaUtenteModal.vb` +
-  their `.Designer.vb`/`.resx` pairs) — UI only, calls into the service classes below.
-- **Service classes** (`Utentes.vb`, `Stock.vb`) — one per domain table, each owns
-  its own `*Obj` data-holder class (e.g. `Utentes.UtentesObj`, `Stock.ArtigoObj`,
-  `Stock.EntregaObj`) and CRUD methods. Not static/shared (except `Stock.EnsureSchema`
-  and CRUD are called on instances) — forms instantiate the service class directly.
+- **Forms** (`UtentesScreen.vb`, `StockScreen.vb`, `PesquisaUtenteModal.vb`,
+  `ArtigoModal.vb` + their `.Designer.vb`/`.resx` pairs) — UI only, calls into the
+  service classes below. `UtentesScreen` is the startup form; its main-screen Stock
+  menu opens `StockScreen`. `ArtigoModal` is a popup dialog (`LoadArtigo`/`GetArtigo`)
+  for adding/editing a single `Stock.ArtigoObj` from the Stock grid — `stockAtual` is
+  deliberately not editable there.
+- **Service classes** (`Utentes.vb`, `Stock.vb`, `Notas.vb`) — one per domain table,
+  each owns its own `*Obj` data-holder class (e.g. `Utentes.UtentesObj`,
+  `Stock.ArtigoObj`, `Stock.EntregaObj`, `Stock.SaidaObj`, `Notas.NotaObj`) and CRUD
+  methods. Not static/shared (except `Stock.EnsureSchema` and CRUD are called on
+  instances) — forms instantiate the service class directly. `Notas` is append-only
+  (free-text timestamped annotations against a Utente) — no edit/delete methods exist.
 - **`GAFDataBase.vb`** — single source of the connection string (reads
   `App.config`'s `GAF.My.MySettings.GAFConnectionString`) and a `NewConnection()`
   factory. Every service method still opens its own `Using`-scoped `SqlConnection`
@@ -73,6 +83,9 @@ Three-layer split, all in the single `GAF` project:
   into `A001`, `B001`, etc. after `999`) by ranking the letter prefix in a fixed
   sequence rather than a plain `MAX()`, since `MAX("U999") > MAX("A001")` lexically
   and would regenerate duplicates after a rollover.
+- `Stock.SaidaObj` (stock a Utente takes without a formal `Entrega`) requires
+  `codUtente` — every stock exit must be attributable to a client, so `codUtente`
+  is non-optional there even though it's nullable on `Entregas`.
 
 ### Logging
 
