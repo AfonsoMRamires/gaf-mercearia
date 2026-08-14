@@ -67,17 +67,19 @@ Public Class Utentes
                     cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "HH:mm:ss"))
                     cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
-                    Dim ms As New IO.MemoryStream
-                    Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
-                    cmd.Parameters.AddWithValue("@foto", ms.ToArray)
+                    Using ms As New IO.MemoryStream
+                        Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
+                        cmd.Parameters.AddWithValue("@foto", ms.ToArray)
+                    End Using
 
                     cmd.Parameters.AddWithValue("@pais", Utentes.pais)
                     cmd.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
                     cmd.Parameters.AddWithValue("@sexo", Utentes.sexo)
 
-                    Dim msAut As New IO.MemoryStream
-                    Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
-                    cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
+                    Using msAut As New IO.MemoryStream
+                        Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
+                        cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
+                    End Using
 
                     cmd.Parameters.AddWithValue("@receita", Utentes.receita)
                     cmd.Parameters.AddWithValue("@despesa", Utentes.despesa)
@@ -164,17 +166,19 @@ Public Class Utentes
                     cmd.Parameters.AddWithValue("@hrCriacao", Format(Utentes.hrCriacao, "HH:mm:ss"))
                     cmd.Parameters.AddWithValue("@obs", Utentes.obs)
 
-                    Dim ms As New IO.MemoryStream
-                    Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
-                    cmd.Parameters.AddWithValue("@foto", ms.ToArray)
+                    Using ms As New IO.MemoryStream
+                        Utentes.foto.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg)
+                        cmd.Parameters.AddWithValue("@foto", ms.ToArray)
+                    End Using
 
                     cmd.Parameters.AddWithValue("@pais", Utentes.pais)
                     cmd.Parameters.AddWithValue("@estCivil", Utentes.estCivil)
                     cmd.Parameters.AddWithValue("@sexo", Utentes.sexo)
 
-                    Dim msAut As New IO.MemoryStream
-                    Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
-                    cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
+                    Using msAut As New IO.MemoryStream
+                        Utentes.fotoAut.Save(msAut, System.Drawing.Imaging.ImageFormat.Jpeg)
+                        cmd.Parameters.AddWithValue("@fotoAut", msAut.ToArray)
+                    End Using
 
                     cmd.Parameters.AddWithValue("@receita", Utentes.receita)
                     cmd.Parameters.AddWithValue("@despesa", Utentes.despesa)
@@ -290,11 +294,14 @@ Public Class Utentes
                             UtentesOut.pais = sdr("pais").ToString
                             UtentesOut.telefone = sdr("telefone").ToString
                             UtentesOut.telemovel = sdr("telemovel").ToString
-                            UtentesOut.dataNasc = sdr("dataNasc").ToString
-                            UtentesOut.dataEntrada = sdr("dataEntrada").ToString
-                            UtentesOut.dataSaida = sdr("dataSaida").ToString
-                            UtentesOut.receita = sdr("receita").ToString
-                            UtentesOut.despesa = sdr("despesa").ToString
+                            ' NULL-guarded (unlike a plain .ToString/implicit-conversion round
+                            ' trip): a NULL in any of these columns used to throw here and make
+                            ' the whole record unreadable.
+                            If Not IsDBNull(sdr("dataNasc")) Then UtentesOut.dataNasc = CDate(sdr("dataNasc"))
+                            If Not IsDBNull(sdr("dataEntrada")) Then UtentesOut.dataEntrada = CDate(sdr("dataEntrada"))
+                            If Not IsDBNull(sdr("dataSaida")) Then UtentesOut.dataSaida = CDate(sdr("dataSaida"))
+                            If Not IsDBNull(sdr("receita")) Then UtentesOut.receita = CDec(sdr("receita"))
+                            If Not IsDBNull(sdr("despesa")) Then UtentesOut.despesa = CDec(sdr("despesa"))
                             UtentesOut.estCivil = sdr("estCivil").ToString
                             UtentesOut.sexo = sdr("sexo").ToString
                             UtentesOut.codPostal = sdr("codPostal").ToString
@@ -311,14 +318,25 @@ Public Class Utentes
                             ' A NULL photo (e.g. a row inserted outside the app) falls back to
                             ' the default silhouette instead of throwing and making the whole
                             ' record unreadable.
+                            ' New Bitmap(stream) alone keeps an internal reference to the stream
+                            ' for the image's whole lifetime instead of copying it — cloning into
+                            ' a fresh Bitmap detaches it so the MemoryStream can be released here.
                             If Not IsDBNull(sdr("foto")) Then
                                 Dim bits As Byte() = CType(sdr("foto"), Byte())
-                                UtentesOut.foto = New Bitmap(New MemoryStream(bits))
+                                Using ms As New MemoryStream(bits)
+                                    Using raw As New Bitmap(ms)
+                                        UtentesOut.foto = New Bitmap(raw)
+                                    End Using
+                                End Using
                             End If
 
                             If Not IsDBNull(sdr("fotoAut")) Then
                                 Dim bitsAut As Byte() = CType(sdr("fotoAut"), Byte())
-                                UtentesOut.fotoAut = New Bitmap(New MemoryStream(bitsAut))
+                                Using msAut As New MemoryStream(bitsAut)
+                                    Using rawAut As New Bitmap(msAut)
+                                        UtentesOut.fotoAut = New Bitmap(rawAut)
+                                    End Using
+                                End Using
                             End If
                         End While
                     End Using
