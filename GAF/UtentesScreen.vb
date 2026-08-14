@@ -1,8 +1,10 @@
-﻿
+﻿Imports System.Drawing.Printing
+
 Public Class UtentesScreen
 
     Dim Utentes As Utentes = New Utentes
     Dim Stock As Stock = New Stock
+    Dim Notas As Notas = New Notas
     Dim returnCode As Boolean = False
     Dim Message As String = String.Empty
     Dim UtentesObj As Utentes.UtentesObj = New Utentes.UtentesObj
@@ -298,6 +300,7 @@ Public Class UtentesScreen
         UtentesObjLocal.telemovel = TBTelemovel.Text
         UtentesObjLocal.estCivil = CBEstCivil.SelectedItem
         UtentesObjLocal.sexo = CBGenero.SelectedItem
+        UtentesObjLocal.codFamilia = Math.Max(CBTipoFamilia.SelectedIndex, 0)
 
         Dim receitaVal As Decimal
         Dim despesaVal As Decimal
@@ -362,6 +365,11 @@ Public Class UtentesScreen
         TBTelemovel.Text = UtentesObj.telemovel
         CBEstCivil.SelectedItem = UtentesObj.estCivil
         CBGenero.SelectedItem = UtentesObj.sexo
+        If UtentesObj.codFamilia >= 0 AndAlso UtentesObj.codFamilia < CBTipoFamilia.Items.Count Then
+            CBTipoFamilia.SelectedIndex = UtentesObj.codFamilia
+        Else
+            CBTipoFamilia.SelectedIndex = 0
+        End If
         TBReceita.Text = UtentesObj.receita
         TBDespesa.Text = UtentesObj.despesa
         If UtentesObj.dataEntrada = Nothing Then
@@ -387,6 +395,53 @@ Public Class UtentesScreen
 
     Public Sub ClearScreenFields()
         FillScreenFields(New Utentes.UtentesObj)
+        TBNotasContainer.Text = String.Empty
+        TBNota.Text = String.Empty
+    End Sub
+
+    ' ── Anotações tab ────────────────────────────────────────────────────────────
+    Private Sub LoadNotas(ByVal codUtente As String)
+        If codUtente.Trim() = String.Empty Then
+            TBNotasContainer.Text = String.Empty
+            Return
+        End If
+        Dim dt As DataTable = Notas.GetNotasByUtente(codUtente, returnCode, Message)
+        If Not returnCode Then
+            TBNotasContainer.Text = String.Empty
+            Return
+        End If
+
+        Dim sb As New System.Text.StringBuilder
+        For Each row As DataRow In dt.Rows
+            sb.AppendLine("[" & CDate(row("dtCriacao")).ToString("dd/MM/yyyy HH:mm") & "] " & row("utilizador").ToString())
+            sb.AppendLine(row("texto").ToString())
+            sb.AppendLine()
+        Next
+        TBNotasContainer.Text = sb.ToString()
+    End Sub
+
+    Private Sub BtnAddNota_Click(sender As Object, e As EventArgs) Handles BtnAddNota.Click
+        If TBNota.Text.Trim() = String.Empty Then
+            MsgBox("Escreva uma nota antes de adicionar")
+            Return
+        End If
+        If UtentesObj.codUtente = String.Empty Then
+            MsgBox("Carregue um utente antes de adicionar uma nota")
+            Return
+        End If
+
+        Dim n As New Notas.NotaObj With {
+            .codUtente = UtentesObj.codUtente,
+            .texto = TBNota.Text.Trim(),
+            .dtCriacao = DateTime.Now,
+            .utilizador = Environment.UserName
+        }
+
+        If Notas.AddNota(n, Message) Then
+            TBNota.Text = String.Empty
+            LoadNotas(UtentesObj.codUtente)
+        End If
+        MsgBox(Message)
     End Sub
 
     Private Sub BtnFoto_Click(sender As Object, e As EventArgs) Handles BtnFoto.Click
@@ -417,6 +472,7 @@ Public Class UtentesScreen
         UtentesObj = Utentes.ReadUtente(codUtente, returnCode, Message)
         If returnCode = True Then
             FillScreenFields(UtentesObj)
+            LoadNotas(UtentesObj.codUtente)
             setScreen("R")
         Else
             ClearScreenFields()
@@ -518,7 +574,6 @@ Public Class UtentesScreen
         TBPais.Enabled = campos_geral
         TBDtEntrada.Enabled = campos_geral
         TBDtSaida.Enabled = campos_geral
-        TBNota.Enabled = campos_geral
         CBEstCivil.Enabled = campos_geral
         CBGenero.Enabled = campos_geral
         CBTipoFamilia.Enabled = campos_geral
@@ -530,9 +585,13 @@ Public Class UtentesScreen
         BtnImprimirCartao.Enabled = botao_imprimir
         BtnFoto.Enabled = botoes_geral
         BtnFotoAut.Enabled = botoes_geral
-        BtnAddNota.Enabled = botoes_geral
+        ' Notes attach to an already-saved Utente (FK), so they're available
+        ' while viewing/editing an existing record, not while creating one.
+        TBNota.Enabled = (mode = "R" OrElse mode = "M")
+        BtnAddNota.Enabled = (mode = "R" OrElse mode = "M")
         BtnPesquisarUtentes.Enabled = codUtente
         BtnVerStock.Enabled = (mode = "R")
+        BtnEliminarUtente.Enabled = (mode = "R")
 
     End Sub
 
@@ -562,6 +621,7 @@ Public Class UtentesScreen
                     If Utentes.AddUtente(getScreenFields(), Message) Then
                         setScreen("R")
                         LoadTodosUtentes()
+                        LoadNotas(getScreenFields().codUtente)
                     End If
                 Case "M"
                     If Utentes.ModUtente(getScreenFields(), Message) Then
@@ -583,5 +643,71 @@ Public Class UtentesScreen
 
     Private Sub BtnPesquisarUtentes_Click(sender As Object, e As EventArgs) Handles BtnPesquisarUtentes.Click
         PesquisaUtenteModal.ShowDialog()
+    End Sub
+
+    Private Sub BtnEliminarUtente_Click(sender As Object, e As EventArgs) Handles BtnEliminarUtente.Click
+        If UtentesObj.codUtente = String.Empty Then
+            MsgBox("Carregue um utente antes de eliminar")
+            Return
+        End If
+
+        If MsgBox("Eliminar o utente '" & UtentesObj.nome & "' (" & UtentesObj.codUtente & ")?",
+                  MsgBoxStyle.YesNo Or MsgBoxStyle.Question, "Confirmar") <> MsgBoxResult.Yes Then
+            Return
+        End If
+
+        If Utentes.DelUtente(UtentesObj, Message) Then
+            ClearScreenFields()
+            setScreen("I")
+            LoadTodosUtentes()
+        End If
+        MsgBox(Message)
+    End Sub
+
+    ' ── Imprimir Cartão ──────────────────────────────────────────────────────────
+    Private Sub BtnImprimirCartao_Click(sender As Object, e As EventArgs) Handles BtnImprimirCartao.Click
+        If UtentesObj.codUtente = String.Empty Then
+            MsgBox("Carregue um utente antes de imprimir o cartão")
+            Return
+        End If
+
+        Dim pd As New PrintDocument()
+        AddHandler pd.PrintPage, AddressOf DesenharCartaoUtente
+
+        Using preview As New PrintPreviewDialog() With {
+            .Document = pd,
+            .Width = 650,
+            .Height = 750
+        }
+            preview.ShowDialog()
+        End Using
+    End Sub
+
+    Private Sub DesenharCartaoUtente(sender As Object, e As PrintPageEventArgs)
+        Dim g As Graphics = e.Graphics
+        Dim x As Integer = 60
+        Dim y As Integer = 60
+
+        Using fontTitulo As New Font("Arial", 16, FontStyle.Bold)
+            g.DrawString("Cartão GAF", fontTitulo, Brushes.Black, x, y)
+        End Using
+        y += 50
+
+        If PBFoto.Image IsNot Nothing Then
+            g.DrawImage(PBFoto.Image, x, y, 120, 140)
+        End If
+
+        Dim xTexto As Integer = x + 150
+        Dim yTexto As Integer = y
+
+        Using fontNormal As New Font("Arial", 12)
+            g.DrawString("Código: " & TBCodUtente.Text, fontNormal, Brushes.Black, xTexto, yTexto)
+            yTexto += 28
+            g.DrawString("Nome: " & TBNome.Text, fontNormal, Brushes.Black, xTexto, yTexto)
+            yTexto += 28
+            g.DrawString("Autorizado(a): " & TBAutorizado.Text, fontNormal, Brushes.Black, xTexto, yTexto)
+        End Using
+
+        e.HasMorePages = False
     End Sub
 End Class

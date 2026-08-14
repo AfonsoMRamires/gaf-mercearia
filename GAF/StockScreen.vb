@@ -22,6 +22,8 @@ Public Class StockScreen
         If pendingCodUtente <> String.Empty Then
             TBCodUtenteHist.Text = pendingCodUtente
             LoadHistorico(pendingCodUtente)
+            TBUtenteSaida.Text = pendingCodUtente
+            LookupNomeUtenteSaida(pendingCodUtente)
         End If
     End Sub
 
@@ -115,6 +117,13 @@ Public Class StockScreen
         End If
     End Sub
 
+    ' DataView.RowFilter has its own expression syntax (not SQL): '*', '%' and '['
+    ' are wildcard/escape characters there, not just the quote we already handle.
+    ' Bracket-escape them so free-typed text can't break the filter expression.
+    Private Function EscapeRowFilterLiteral(ByVal s As String) As String
+        Return s.Replace("'", "''").Replace("[", "[[]").Replace("%", "[%]").Replace("*", "[*]")
+    End Function
+
     Private Sub ApplyHistoricoFilter()
         If historicoDt Is Nothing Then Return
 
@@ -126,14 +135,19 @@ Public Class StockScreen
             filters.Add("Data <= #" & DTPDataAteHist.Value.ToString("MM/dd/yyyy") & "#")
         End If
         If TBDescricaoHist.Text.Trim() <> String.Empty Then
-            filters.Add("Descricao LIKE '%" & TBDescricaoHist.Text.Trim().Replace("'", "''") & "%'")
+            filters.Add("Descricao LIKE '%" & EscapeRowFilterLiteral(TBDescricaoHist.Text.Trim()) & "%'")
         End If
         If CBTipoHist.SelectedIndex > 0 Then
-            filters.Add("Tipo = '" & CBTipoHist.SelectedItem.ToString() & "'")
+            filters.Add("Tipo = '" & EscapeRowFilterLiteral(CBTipoHist.SelectedItem.ToString()) & "'")
         End If
 
         Dim dv As DataView = historicoDt.DefaultView
-        dv.RowFilter = String.Join(" AND ", filters)
+        Try
+            dv.RowFilter = String.Join(" AND ", filters)
+        Catch ex As Exception
+            MsgBox("Filtro inválido: " & ex.Message)
+            dv.RowFilter = String.Empty
+        End Try
         DGVHistorico.DataSource = dv
     End Sub
 

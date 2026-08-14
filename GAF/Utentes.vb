@@ -89,6 +89,13 @@ Public Class Utentes
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
+        Catch ex As SqlException When ex.Number = 2627 OrElse ex.Number = 2601
+            ' Two operators clicking "Novo" at the same moment can be handed the same
+            ' generated code (GetNewCodUtente reads, then this insert writes, with no
+            ' lock held across that gap). Rather than a raw PK-violation error, tell
+            ' the user to just try again — a fresh Novo click generates a new code.
+            Message = "Código '" & Utentes.codUtente & "' já foi utilizado entretanto. Clique em Novo novamente."
+            Return False
         Catch ex As Exception
             Message = "Erro Método AddUtente: " + ex.Message
             AppLogger.Error("AddUtente", ex)
@@ -100,13 +107,12 @@ Public Class Utentes
         Return True
     End Function
 
+    ' Hard delete. Blocked by FK constraints (Entregas/SaidasStock/Notas) if the
+    ' Utente already has history — caller should mark them inactive instead.
+    ' Confirmation happens in the UI before this is ever called.
     Public Function DelUtente(ByVal Utentes As UtentesObj, ByRef Message As String) As Boolean
 
         Try
-            'TODO
-            'Inserir validações nas demais tabelas para impedir inconsistência de dados
-            'Inserir confirmação antes de eliminar o registo
-
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 Using cmd As New SqlCommand("DELETE FROM Utentes WHERE codUtente = @codUtente", conn)
                     cmd.Parameters.AddWithValue("@codUtente", Utentes.codUtente)
@@ -114,6 +120,9 @@ Public Class Utentes
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
+        Catch ex As SqlException When ex.Number = 547
+            Message = "Não é possível eliminar: este utente já tem entregas, saídas ou notas registadas. Torne-o inativo em vez de eliminar."
+            Return False
         Catch ex As Exception
             Message = "Erro Método DelUtente: " + ex.Message
             AppLogger.Error("DelUtente", ex)
@@ -188,6 +197,12 @@ Public Class Utentes
         Return True
     End Function
 
+    ' Escapes LIKE wildcard characters so a literal '%', '_' or '[' typed by the
+    ' user is matched literally instead of being treated as a pattern.
+    Private Shared Function EscapeLike(ByVal s As String) As String
+        Return s.Replace("\", "\\").Replace("%", "\%").Replace("_", "\_").Replace("[", "\[")
+    End Function
+
     Public Function FindUtenteByName(ByVal nome As String, ByVal autorizado As String, ByRef returnCode As Boolean, ByRef Message As String) As DataTable
 
         Dim dt As New DataTable
@@ -203,13 +218,13 @@ Public Class Utentes
             End If
 
             Dim sql As String = "SELECT codUtente, nome, autorizado, ativo FROM Utentes WHERE 1=1"
-            If hasNome Then sql &= " AND nome LIKE @nome"
-            If hasAut Then sql &= " AND autorizado LIKE @autorizado"
+            If hasNome Then sql &= " AND nome LIKE @nome ESCAPE '\'"
+            If hasAut Then sql &= " AND autorizado LIKE @autorizado ESCAPE '\'"
 
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 Using cmd As New SqlCommand(sql, conn)
-                    If hasNome Then cmd.Parameters.AddWithValue("@nome", "%" & nome & "%")
-                    If hasAut Then cmd.Parameters.AddWithValue("@autorizado", "%" & autorizado & "%")
+                    If hasNome Then cmd.Parameters.AddWithValue("@nome", "%" & EscapeLike(nome) & "%")
+                    If hasAut Then cmd.Parameters.AddWithValue("@autorizado", "%" & EscapeLike(autorizado) & "%")
                     conn.Open()
                     Using da As New SqlDataAdapter(cmd)
                         da.Fill(dt)
@@ -293,13 +308,18 @@ Public Class Utentes
                             If Not IsDBNull(sdr("hrCriacao")) Then UtentesOut.hrCriacao = Date.MinValue.Add(CType(sdr("hrCriacao"), TimeSpan))
                             If Not IsDBNull(sdr("ultimaEntrega")) Then UtentesOut.ultimaEntrega = CDate(sdr("ultimaEntrega"))
 
-                            Dim bits As Byte() = CType(sdr("foto"), Byte())
-                            Dim memorybits As New MemoryStream(bits)
-                            UtentesOut.foto = New Bitmap(memorybits)
+                            ' A NULL photo (e.g. a row inserted outside the app) falls back to
+                            ' the default silhouette instead of throwing and making the whole
+                            ' record unreadable.
+                            If Not IsDBNull(sdr("foto")) Then
+                                Dim bits As Byte() = CType(sdr("foto"), Byte())
+                                UtentesOut.foto = New Bitmap(New MemoryStream(bits))
+                            End If
 
-                            Dim bitsAut As Byte() = CType(sdr("fotoAut"), Byte())
-                            Dim memorybitsAut As New MemoryStream(bitsAut)
-                            UtentesOut.fotoAut = New Bitmap(memorybitsAut)
+                            If Not IsDBNull(sdr("fotoAut")) Then
+                                Dim bitsAut As Byte() = CType(sdr("fotoAut"), Byte())
+                                UtentesOut.fotoAut = New Bitmap(New MemoryStream(bitsAut))
+                            End If
                         End While
                     End Using
                 End Using
@@ -321,28 +341,30 @@ Public Class Utentes
         Return UtentesOut
     End Function
 
+    ' Prefix rollover order: U first (legacy starting point), then A-Z skipping
+    ' U itself since it's already used — 26 prefixes * 999 ≈ 25,974 utentes of
+    ' capacity before GetNewCodUtente reports exhaustion instead of duplicating.
+    Private Const CodigoSequencia As String = "UABCDEFGHIJKLMNOPQRSTVWXYZ"
+
     Public Function GetNewCodUtente(ByRef returnCode As Boolean, ByRef Message As String) As String
 
         Dim newCodUtente As String = String.Empty
-        Dim letra As Char = "U"
 
         returnCode = True
 
         Try
-            ' The prefix sequence is U, A, B, C, ... so plain MAX(codUtente) is wrong:
-            ' lexically "U999" > "A001", meaning after a U->A rollover MAX would keep
-            ' returning the old U-code forever and regenerate a duplicate. Rank the
-            ' prefix in sequence order, then by the numeric suffix, and take the top.
+            ' Plain MAX(codUtente) is wrong here: lexically "U999" > "A001", so after
+            ' a U->A rollover MAX would keep returning the old U-code forever and
+            ' regenerate a duplicate. Rank by the prefix's position in the rollover
+            ' sequence, then by the numeric suffix, and take the top.
             Dim sql As String =
                 "SELECT TOP 1 codUtente FROM Utentes " &
-                "ORDER BY CASE LEFT(codUtente,1) " &
-                "WHEN 'U' THEN 0 WHEN 'A' THEN 1 WHEN 'B' THEN 2 WHEN 'C' THEN 3 " &
-                "WHEN 'D' THEN 4 WHEN 'E' THEN 5 WHEN 'F' THEN 6 WHEN 'G' THEN 7 " &
-                "WHEN 'H' THEN 8 ELSE 99 END DESC, " &
+                "ORDER BY CHARINDEX(LEFT(codUtente,1), @seq) DESC, " &
                 "CAST(RIGHT(codUtente,3) AS INT) DESC"
 
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@seq", CodigoSequencia)
                     conn.Open()
                     Dim result As Object = cmd.ExecuteScalar()
                     newCodUtente = If(result Is Nothing OrElse result Is DBNull.Value, "", result.ToString())
@@ -352,36 +374,27 @@ Public Class Utentes
             If newCodUtente = "" Then
                 newCodUtente = "U001"
             Else
+                Dim letraAtual As Char = CChar(Left$(newCodUtente, 1))
                 Dim codeString As String = Right$(newCodUtente, 3)
+                Dim proximaLetra As Char
+
                 If codeString = "999" Then
+                    Dim idx As Integer = CodigoSequencia.IndexOf(letraAtual)
+                    If idx = -1 OrElse idx + 1 >= CodigoSequencia.Length Then
+                        returnCode = False
+                        Message = "Limite de códigos de utente atingido — contacte o suporte"
+                        Return String.Empty
+                    End If
+                    proximaLetra = CodigoSequencia(idx + 1)
                     codeString = "000"
-                    Select Case Left$(newCodUtente, 1)
-                        Case "U"
-                            letra = "A"
-                        Case "A"
-                            letra = "B"
-                        Case "B"
-                            letra = "C"
-                        Case "C"
-                            letra = "D"
-                        Case "D"
-                            letra = "E"
-                        Case "E"
-                            letra = "F"
-                        Case "F"
-                            letra = "G"
-                        Case "G"
-                            letra = "H"
-                        Case Else
-                            letra = "Z"
-                    End Select
                 Else
-                    letra = CChar(Left$(newCodUtente, 1))
+                    proximaLetra = letraAtual
                 End If
+
                 ' Integer increment (was string concatenation under Option Strict Off).
                 Dim codeInt As Integer = Integer.Parse(codeString) + 1
                 codeString = codeInt.ToString().PadLeft(3, "0"c)
-                newCodUtente = letra & codeString
+                newCodUtente = proximaLetra & codeString
             End If
 
         Catch ex As Exception

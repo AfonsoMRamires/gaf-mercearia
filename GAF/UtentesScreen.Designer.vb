@@ -91,6 +91,8 @@ Partial Class UtentesScreen
         Me.BtnGravar = New System.Windows.Forms.ToolStripButton()
         Me.BtnLimpar = New System.Windows.Forms.ToolStripButton()
         Me.BtnImprimirCartao = New System.Windows.Forms.ToolStripButton()
+        Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
+        Me.BtnEliminarUtente = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.BtnNavFicha = New System.Windows.Forms.ToolStripButton()
         Me.BtnNavTodosUtentes = New System.Windows.Forms.ToolStripButton()
@@ -989,7 +991,7 @@ Partial Class UtentesScreen
         Me.TSBotoes.BackColor = System.Drawing.SystemColors.ButtonShadow
         Me.TSBotoes.Dock = System.Windows.Forms.DockStyle.Left
         Me.TSBotoes.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao, Me.ToolStripSeparator5, Me.BtnNavFicha, Me.BtnNavTodosUtentes, Me.BtnNavStock})
+        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao, Me.ToolStripSeparator6, Me.BtnEliminarUtente, Me.ToolStripSeparator5, Me.BtnNavFicha, Me.BtnNavTodosUtentes, Me.BtnNavStock})
         Me.TSBotoes.Location = New System.Drawing.Point(0, 0)
         Me.TSBotoes.Name = "TSBotoes"
         Me.TSBotoes.Size = New System.Drawing.Size(37, 529)
@@ -1031,7 +1033,7 @@ Partial Class UtentesScreen
         '
         Me.CBTipoFamilia.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CBTipoFamilia.FormattingEnabled = True
-        Me.CBTipoFamilia.Items.AddRange(New Object() {"", "Casado(a)", "Solteiro(a)", "Viúvo(a)", "Divorciado(a)", "Outro(a)"})
+        Me.CBTipoFamilia.Items.AddRange(New Object() {"", "Unipessoal", "Monoparental", "Nuclear", "Alargada", "Outro"})
         Me.CBTipoFamilia.Location = New System.Drawing.Point(98, 19)
         Me.CBTipoFamilia.Name = "CBTipoFamilia"
         Me.CBTipoFamilia.Size = New System.Drawing.Size(302, 23)
@@ -1109,6 +1111,19 @@ Partial Class UtentesScreen
         Me.BtnImprimirCartao.Size = New System.Drawing.Size(34, 36)
         Me.BtnImprimirCartao.Text = "ToolStripButton4"
         Me.BtnImprimirCartao.ToolTipText = "Imprimir Cartão"
+        '
+        'ToolStripSeparator6
+        '
+        Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
+        Me.ToolStripSeparator6.Size = New System.Drawing.Size(34, 6)
+        '
+        'BtnEliminarUtente
+        '
+        Me.BtnEliminarUtente.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.BtnEliminarUtente.Name = "BtnEliminarUtente"
+        Me.BtnEliminarUtente.Size = New System.Drawing.Size(34, 36)
+        Me.BtnEliminarUtente.Text = "Eliminar"
+        Me.BtnEliminarUtente.ToolTipText = "Eliminar Utente"
         '
         'ToolStripSeparator5
         '
@@ -1270,6 +1285,8 @@ Partial Class UtentesScreen
     Friend WithEvents BtnLimpar As ToolStripButton
     Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
     Friend WithEvents BtnImprimirCartao As ToolStripButton
+    Friend WithEvents ToolStripSeparator6 As ToolStripSeparator
+    Friend WithEvents BtnEliminarUtente As ToolStripButton
     Friend WithEvents TBTelemovel As TextBox
     Friend WithEvents Label13 As Label
     Friend WithEvents TBTelefone As TextBox
