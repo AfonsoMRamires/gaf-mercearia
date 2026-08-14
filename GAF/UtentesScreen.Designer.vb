@@ -1121,7 +1121,9 @@ Partial Class UtentesScreen
         '
         'BtnEliminarUtente
         '
-        Me.BtnEliminarUtente.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.BtnEliminarUtente.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.BtnEliminarUtente.Image = Global.GAF.My.Resources.Resource1.icons_trash_can
+        Me.BtnEliminarUtente.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.BtnEliminarUtente.Name = "BtnEliminarUtente"
         Me.BtnEliminarUtente.Size = New System.Drawing.Size(34, 36)
         Me.BtnEliminarUtente.Text = "Eliminar"
