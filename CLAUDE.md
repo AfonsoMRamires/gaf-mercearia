@@ -103,3 +103,15 @@ anywhere; don't introduce a different logging mechanism.
   throughout; don't assume Option Strict On semantics when reasoning about types.
 - No NuGet packages currently in use (`nuget restore` is a no-op today, but is
   still run in CI/build docs for when that changes).
+- `GAF/GAF.mdf` + `GAF/GAF_log.ldf` are tracked in git but are stale LocalDB
+  leftovers from before the SQLEXPRESS migration (see `36b7889`) — `App.config`
+  points at `.\SQLEXPRESS`, not this file, so it is not actually used at
+  runtime. Don't treat its presence as evidence the app uses an attached
+  `.mdf`; if touching DB config, verify against `App.config` directly.
+- `StartupObject` is `GAF.My.MyApplication` (VB "Application Framework"
+  default), not an explicit `Sub Main` — `UtentesScreen` becomes the startup
+  form via the `My Project` / `Application.myapp` settings, not code you'll
+  find by grepping for `Application.Run`.
+- `Stock.vb` (435 lines) and `UtentesScreen.vb` (736 lines) are the largest
+  and most-changed files — most stock/CRUD work and most UI work respectively
+  lands there.
