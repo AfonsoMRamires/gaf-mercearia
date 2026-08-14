@@ -343,37 +343,15 @@ Public Class Stock
         End Try
     End Function
 
-    Public Function GetEntregasByUtente(ByVal codUtente As String,
-                                        ByRef returnCode As Boolean,
-                                        ByRef Message As String) As DataTable
-        Dim dt As New DataTable
-        Try
-            Using conn As New SqlConnection(GAFDataBase.ConnectionString)
-                Using cmd As New SqlCommand(
-                    "SELECT e.codEntrega, a.descricao, a.unidade, e.quantidade, e.dtEntrega, e.utilizador, e.obs " &
-                    "FROM Entregas e INNER JOIN Artigos a ON e.codArtigo = a.codArtigo " &
-                    "WHERE e.codUtente = @codUtente ORDER BY e.dtEntrega DESC", conn)
-                    cmd.Parameters.AddWithValue("@codUtente", codUtente)
-                    conn.Open()
-                    Using da As New SqlDataAdapter(cmd)
-                        da.Fill(dt)
-                    End Using
-                End Using
-            End Using
-            returnCode = True
-        Catch ex As Exception
-            Message = "Erro Método GetEntregasByUtente: " & ex.Message
-            AppLogger.Error("GetEntregasByUtente", ex)
-            returnCode = False
-        End Try
-        Return dt
-    End Function
-
     ' ── Saídas de stock (sem entrega a Utente) ─────────────────────────────────
     ' Records stock leaving for a reason other than a delivery (perda, consumo
     ' interno, correção de inventário, etc.). Same guarded-decrement pattern as
     ' RegistarEntrega, just without the Utente side.
     Public Function RegistarSaida(ByVal s As SaidaObj, ByRef Message As String) As Boolean
+        If s.codUtente.Trim() = String.Empty Then
+            Message = "Código de utente é obrigatório numa Saída de Stock"
+            Return False
+        End If
         Try
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
                 conn.Open()
@@ -387,11 +365,7 @@ Public Class Stock
                             cmd.Parameters.AddWithValue("@dtSaida", s.dtSaida.ToString("yyyy-MM-dd"))
                             cmd.Parameters.AddWithValue("@motivo", s.motivo)
                             cmd.Parameters.AddWithValue("@utilizador", s.utilizador)
-                            If s.codUtente.Trim() = String.Empty Then
-                                cmd.Parameters.AddWithValue("@codUtente", DBNull.Value)
-                            Else
-                                cmd.Parameters.AddWithValue("@codUtente", s.codUtente.Trim())
-                            End If
+                            cmd.Parameters.AddWithValue("@codUtente", s.codUtente.Trim())
                             cmd.ExecuteNonQuery()
                         End Using
 

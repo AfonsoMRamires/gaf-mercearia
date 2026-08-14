@@ -300,6 +300,9 @@ Public Class UtentesScreen
         UtentesObjLocal.telemovel = TBTelemovel.Text
         UtentesObjLocal.estCivil = CBEstCivil.SelectedItem
         UtentesObjLocal.sexo = CBGenero.SelectedItem
+        ' codFamilia is persisted as this combo's raw SelectedIndex, not a stable code —
+        ' reordering or relabeling CBTipoFamilia.Items (Designer.vb) silently changes what
+        ' every already-stored codFamilia value means for existing Utentes rows.
         UtentesObjLocal.codFamilia = Math.Max(CBTipoFamilia.SelectedIndex, 0)
 
         Dim receitaVal As Decimal
