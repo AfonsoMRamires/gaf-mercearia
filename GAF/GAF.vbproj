@@ -189,6 +189,7 @@
     <None Include="Resources\icons8-edit-property-48.png" />
     <None Include="Resources\icons8-save-48.png" />
     <None Include="Resources\foto_default.png" />
+    <None Include="Resources\icons-trash-can.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
