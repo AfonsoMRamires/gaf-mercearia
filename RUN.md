@@ -1,8 +1,9 @@
 # Running GAF on Windows
 
-GAF is a VB.NET WinForms desktop app targeting **.NET Framework 4.7.2**. It uses
-**SQL Server LocalDB** with a database file (`GAF.mdf`) attached at runtime. All
-three dependencies are Windows-only, so the app builds and runs only on Windows.
+GAF is a VB.NET WinForms desktop app targeting **.NET Framework 4.7.2**. It uses a
+**SQL Server Express** instance (database `GAF` on `.\SQLEXPRESS`) over Integrated
+Security. All dependencies are Windows-only, so the app builds and runs only on
+Windows.
 
 ---
 
@@ -14,20 +15,22 @@ Install on the Windows machine:
 - One of:
   - **Visual Studio 2022** (Community is fine) with the **.NET desktop development** workload, or
   - **Build Tools for Visual Studio 2022** + the **.NET Framework 4.7.2 targeting pack**
-- **SQL Server Express LocalDB** — ships with Visual Studio; otherwise install the
-  [standalone LocalDB](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb) package.
+- **SQL Server Express**, with an instance named `SQLEXPRESS` (the default instance
+  name the installer proposes). Installing SQL Server Express itself requires admin
+  rights on the machine — if you don't have them, ask whoever manages the machine to
+  install it once; after that, creating/using databases on the instance does not
+  require admin.
 
-Verify LocalDB is available (Command Prompt / PowerShell):
+Verify the instance is installed and running (Command Prompt / PowerShell):
 
 ```powershell
-sqllocaldb info
+Get-Service | Where-Object { $_.Name -like "*SQL*" }
 ```
 
-If the default instance is missing, create it:
+You should see `MSSQL$SQLEXPRESS` with status `Running`. If it's `Stopped`:
 
 ```powershell
-sqllocaldb create MSSQLLocalDB
-sqllocaldb start MSSQLLocalDB
+Start-Service "MSSQL$SQLEXPRESS"
 ```
 
 ---
@@ -43,30 +46,30 @@ cd gaf-mercearia
 
 ## 3. Database (required — read this first)
 
-The connection string (`GAF/App.config`) attaches a local database file:
+The connection string (`GAF/App.config`) connects to a named database on the local
+SQLEXPRESS instance:
 
 ```
-Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\GAF.mdf;Integrated Security=True;Connect Timeout=30
+Data Source=.\SQLEXPRESS;Initial Catalog=GAF;Integrated Security=True;Connect Timeout=30
 ```
 
-`GAF.mdf` and `GAF_log.ldf` are **gitignored and NOT in the repo** (database files
-don't belong in source control). You must supply a `GAF.mdf` before the app will run.
+There's no database file to copy around — the `GAF` database lives inside the
+SQLEXPRESS instance itself, same as any other SQL Server database.
 
-The app **auto-creates** the `Artigos` and `Entregas` tables on startup
-(`Stock.EnsureSchema`), but it does **not** create the core `Utentes` table — that
-must already exist in the database.
+The app **auto-creates** the `Artigos`, `Entregas`, `SaidasStock` and `Notas` tables
+on startup (`Stock.EnsureSchema`), but it does **not** create the core `Utentes`
+table — that must already exist in the database.
 
-Pick one:
+**Create the database (first time only):**
 
-**A. You already have a `GAF.mdf`** (from a colleague / previous machine)
-Copy it into `GAF/` next to `App.config`. Done.
-
-**B. Create a fresh database**
-1. Open **View → SQL Server Object Explorer** in Visual Studio (or SSMS), connect to
-   `(LocalDB)\MSSQLLocalDB`.
-2. Create a database named `GAF` (this produces `GAF.mdf` + `GAF_log.ldf`).
-3. Create the `Utentes` table. It must contain at least these columns (types inferred
-   from the code; adjust as needed):
+1. Connect to `.\SQLEXPRESS` with SSMS, Visual Studio's SQL Server Object Explorer,
+   or `sqlcmd`.
+2. Create a database named `GAF`:
+   ```sql
+   CREATE DATABASE GAF;
+   ```
+3. Create the `Utentes` table. It must contain at least these columns (types
+   inferred from the code; adjust as needed):
 
    | Column | Type | Notes |
    |---|---|---|
@@ -84,10 +87,12 @@ Copy it into `GAF/` next to `App.config`. Done.
    > Column **order matters**: `AddUtente` uses `INSERT INTO Utentes VALUES (...)`
    > without a column list, so the table's physical column order must match the order
    > in `Utentes.vb` `AddUtente`.
-4. Copy the resulting `GAF.mdf` (and `.ldf`) into `GAF/`.
 
 > **Tip:** prefer `DATE` columns over `DATETIME`. Unset dates are written as
 > `1900-01-01`; `DATETIME` also works, but `DATE` avoids any min-value edge cases.
+
+If you already have a colleague's populated `GAF` database, restore/attach it to
+your own SQLEXPRESS instance under the name `GAF` instead of creating an empty one.
 
 ---
 
@@ -108,7 +113,8 @@ Output lands in `GAF\bin\Release\` (or `bin\Debug\`).
 > CI already verifies the build on every push — see
 > `.github/workflows/build.yml` (runs on `windows-latest`). A green run's
 > **GAF-Release** artifact is a ready-to-run build you can download instead of
-> compiling locally (you still need to supply `GAF.mdf` and LocalDB to run it).
+> compiling locally (you still need a SQLEXPRESS instance with a `GAF` database to
+> run it).
 
 ---
 
@@ -121,9 +127,6 @@ Output lands in `GAF\bin\Release\` (or `bin\Debug\`).
 ```powershell
 GAF\bin\Release\GAF.exe
 ```
-
-`GAF.mdf` is copied next to `GAF.exe` on build (`CopyToOutputDirectory=Always`), so
-the running app uses the copy in the output folder, not the one in `GAF/`.
 
 ---
 
@@ -144,8 +147,8 @@ DB errors are logged there with a stack trace.
 
 | Symptom | Likely cause / fix |
 |---|---|
-| `MSB3030: Could not copy ... GAF.mdf` on build | `GAF.mdf` missing — see section 3. |
-| App starts but every action errors "Invalid object name 'Utentes'" | `Utentes` table not created in the DB — see section 3B. |
-| `A network-related or instance-specific error ... LocalDB` | LocalDB not installed/started — see section 1. |
+| App starts but every action errors "Invalid object name 'Utentes'" | `Utentes` table not created in the DB — see section 3. |
+| `A network-related or instance-specific error ... SQL Server` | SQLEXPRESS instance not installed/running — see section 1. |
+| `Cannot open database "GAF" requested by the login` | The `GAF` database doesn't exist yet on this instance — see section 3. |
 | Insert fails on a date column | Ensure date columns are `DATE` (or `DATETIME`); unset dates map to `1900-01-01`. |
 | Photos fail to load | `foto` / `fotoAut` must be `VARBINARY(MAX)` holding JPEG bytes. |
