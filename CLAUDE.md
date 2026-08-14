@@ -5,12 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 GAF — VB.NET WinForms desktop app for a mercearia (grocery/food-bank) client registry
-and stock management. Windows-only: .NET Framework 4.7.2 + SQL Server LocalDB. Single
+and stock management. Windows-only: .NET Framework 4.7.2 + SQL Server Express. Single
 project (`GAF/GAF.vbproj`), single solution (`GAF.sln`), no test project exists.
 
 ## Build / run
 
-Windows only (LocalDB + WinForms). From a Developer Command Prompt or PowerShell:
+Windows only (SQL Server Express + WinForms). From a Developer Command Prompt or PowerShell:
 
 ```powershell
 nuget restore GAF.sln
@@ -26,15 +26,17 @@ No test suite exists — there is nothing to run beyond a successful build.
 
 ### Database is required before the app runs
 
-`GAF.mdf`/`GAF_log.ldf` are gitignored and not in the repo (`CopyToOutputDirectory=Always`
-copies them into the build output). The app auto-creates `Artigos`, `Entregas`,
-`SaidasStock` and `Notas` on startup (`Stock.EnsureSchema`) but does **not** create
-`Utentes` — that table must already exist in whatever `GAF.mdf` you supply.
+The connection string (`GAF/App.config`'s `GAF.My.MySettings.GAFConnectionString`)
+points at a `GAF` database on the local `.\SQLEXPRESS` instance over Integrated
+Security — no attached `.mdf` file, no LocalDB. The app auto-creates `Artigos`,
+`Entregas`, `SaidasStock` and `Notas` on startup (`Stock.EnsureSchema`) but does
+**not** create `Utentes` — that table must already exist in the `GAF` database.
 `EnsureSchema` also runs a few idempotent `ALTER TABLE` self-heal checks (e.g.
 relaxing `Entregas.codUtente` to nullable, adding `SaidasStock.codUtente` +
 its FK) for DBs created before those columns existed — it only ever creates
 missing tables/columns, never drops or alters existing data. See `RUN.md` for
-full setup (LocalDB install, column list/types for `Utentes`, troubleshooting table).
+full setup (SQLEXPRESS prerequisites, column list/types for `Utentes`,
+troubleshooting table).
 
 Key gotcha from `RUN.md`: `Utentes.AddUtente` does `INSERT INTO Utentes VALUES (...)`
 with no column list, so the physical column order in the table must match the order
@@ -84,8 +86,9 @@ Three-layer split, all in the single `GAF` project:
   sequence rather than a plain `MAX()`, since `MAX("U999") > MAX("A001")` lexically
   and would regenerate duplicates after a rollover.
 - `Stock.SaidaObj` (stock a Utente takes without a formal `Entrega`) requires
-  `codUtente` — every stock exit must be attributable to a client, so `codUtente`
-  is non-optional there even though it's nullable on `Entregas`.
+  `codUtente` — every stock exit must be attributable to a client. `RegistarSaida`
+  rejects an empty `codUtente` itself (not just the `StockScreen` UI), even though
+  the column is nullable on `Entregas`.
 
 ### Logging
 
