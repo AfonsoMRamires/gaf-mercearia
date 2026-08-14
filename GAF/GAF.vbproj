@@ -176,6 +176,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="GAF.mdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GAF_log.ldf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Resources\icons8-broom-24.png" />
     <None Include="Resources\icons8-find-user-male-24.png" />
     <None Include="Resources\icons8-search-16.png" />
