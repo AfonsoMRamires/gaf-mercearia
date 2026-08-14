@@ -96,6 +96,55 @@ Public Class Stock
                     "END", conn)
                     cmd.ExecuteNonQuery()
                 End Using
+
+                Using cmd As New SqlCommand(
+                    "IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='Notas') " &
+                    "BEGIN " &
+                    "CREATE TABLE Notas (" &
+                    "codNota INT NOT NULL IDENTITY(1,1) PRIMARY KEY, " &
+                    "codUtente CHAR(4) NOT NULL, " &
+                    "texto NVARCHAR(1000) NOT NULL, " &
+                    "dtCriacao DATETIME NOT NULL DEFAULT GETDATE(), " &
+                    "utilizador NVARCHAR(50) NOT NULL DEFAULT '', " &
+                    "CONSTRAINT FK_Notas_Utentes FOREIGN KEY (codUtente) REFERENCES Utentes(codUtente)) " &
+                    "END", conn)
+                    cmd.ExecuteNonQuery()
+                End Using
+
+                ' ── Self-heal for schema drift introduced after a DB was already created ──
+                ' EnsureSchema only ever creates missing tables, never alters existing
+                ' ones, so a DB from before Entregas/SaidasStock allowed an optional
+                ' Utente needs these two idempotent patches applied on every startup.
+                Using cmd As New SqlCommand(
+                    "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS " &
+                    "WHERE TABLE_NAME='Entregas' AND COLUMN_NAME='codUtente' AND IS_NULLABLE='NO') " &
+                    "BEGIN " &
+                    "ALTER TABLE Entregas ALTER COLUMN codUtente CHAR(4) NULL " &
+                    "END", conn)
+                    cmd.ExecuteNonQuery()
+                End Using
+
+                Using cmd As New SqlCommand(
+                    "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='SaidasStock') " &
+                    "AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS " &
+                    "WHERE TABLE_NAME='SaidasStock' AND COLUMN_NAME='codUtente') " &
+                    "BEGIN " &
+                    "ALTER TABLE SaidasStock ADD codUtente CHAR(4) NULL " &
+                    "END", conn)
+                    cmd.ExecuteNonQuery()
+                End Using
+
+                Using cmd As New SqlCommand(
+                    "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='SaidasStock') " &
+                    "AND EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS " &
+                    "WHERE TABLE_NAME='SaidasStock' AND COLUMN_NAME='codUtente') " &
+                    "AND NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SaidasStock_Utentes') " &
+                    "BEGIN " &
+                    "ALTER TABLE SaidasStock ADD CONSTRAINT FK_SaidasStock_Utentes " &
+                    "FOREIGN KEY (codUtente) REFERENCES Utentes(codUtente) " &
+                    "END", conn)
+                    cmd.ExecuteNonQuery()
+                End Using
             End Using
             AppLogger.Info("EnsureSchema", "Schema de stock verificado")
         Catch ex As Exception

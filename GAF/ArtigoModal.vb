@@ -11,7 +11,9 @@ Public Class ArtigoModal
         codArtigo = a.codArtigo
         TBDescricao.Text = a.descricao
         TBUnidade.Text = a.unidade
-        NUDStockMinimo.Value = a.stockMinimo
+        ' Clamp rather than assign directly — a stockMinimo written outside the
+        ' app (raw SQL) could exceed this control's bounds and throw on open.
+        NUDStockMinimo.Value = Math.Max(NUDStockMinimo.Minimum, Math.Min(NUDStockMinimo.Maximum, a.stockMinimo))
         CBAtivo.Checked = a.ativo
         TBObs.Text = a.obs
     End Sub

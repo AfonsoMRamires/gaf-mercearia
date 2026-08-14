@@ -38,6 +38,10 @@
     End Sub
 
     Private Sub BtnSelecionar_Click(sender As Object, e As EventArgs) Handles BtnSelecionar.Click
+        If DGVUtentes.SelectedRows.Count = 0 Then
+            MsgBox("Selecione um utente na lista")
+            Return
+        End If
         My.Forms.UtentesScreen.setCodUtente(DGVUtentes.SelectedRows(0).Cells(0).Value.ToString)
         Close()
     End Sub
