@@ -43,9 +43,27 @@ Public Class UtentesScreen
     ' ── Left menu navigation (Ficha Utente / Todos os Utentes / Stock) ──────────
     ' Ficha Utente's own controls stay on the form as-is; these two overlay
     ' panels just cover them (Dock=Fill, topmost) when shown.
+    ' Ficha-only action buttons (Novo/Alterar/Gravar/Limpar/Imprimir/Eliminar) make
+    ' no sense on the Todos os Utentes or Stock overlays — hide them there.
+    Private Sub SetFichaActionButtonsVisible(visible As Boolean)
+        BtnNovo.Visible = visible
+        ToolStripSeparator4.Visible = visible
+        BtnAlterar.Visible = visible
+        ToolStripSeparator1.Visible = visible
+        BtnGravar.Visible = visible
+        ToolStripSeparator2.Visible = visible
+        BtnLimpar.Visible = visible
+        ToolStripSeparator3.Visible = visible
+        BtnImprimirCartao.Visible = visible
+        ToolStripSeparator6.Visible = visible
+        BtnEliminarUtente.Visible = visible
+        ToolStripSeparator5.Visible = visible
+    End Sub
+
     Private Sub ShowFicha()
         PnlTodosUtentes.Visible = False
         PnlStock.Visible = False
+        SetFichaActionButtonsVisible(True)
     End Sub
 
     Private Sub BtnNavFicha_Click(sender As Object, e As EventArgs) Handles BtnNavFicha.Click
@@ -57,6 +75,7 @@ Public Class UtentesScreen
         PnlStock.Visible = False
         PnlTodosUtentes.Visible = True
         PnlTodosUtentes.BringToFront()
+        SetFichaActionButtonsVisible(False)
     End Sub
 
     Private Sub BtnNavStock_Click(sender As Object, e As EventArgs) Handles BtnNavStock.Click
@@ -65,6 +84,7 @@ Public Class UtentesScreen
         PnlTodosUtentes.Visible = False
         PnlStock.Visible = True
         PnlStock.BringToFront()
+        SetFichaActionButtonsVisible(False)
     End Sub
 
     ' ── Todos os Utentes overlay ──────────────────────────────────────────────────
@@ -366,8 +386,8 @@ Public Class UtentesScreen
         End If
         TBTelefone.Text = UtentesObj.telefone
         TBTelemovel.Text = UtentesObj.telemovel
-        CBEstCivil.SelectedItem = UtentesObj.estCivil
-        CBGenero.SelectedItem = UtentesObj.sexo
+        SetComboPreservingUnknown(CBEstCivil, UtentesObj.estCivil)
+        SetComboPreservingUnknown(CBGenero, UtentesObj.sexo)
         If UtentesObj.codFamilia >= 0 AndAlso UtentesObj.codFamilia < CBTipoFamilia.Items.Count Then
             CBTipoFamilia.SelectedIndex = UtentesObj.codFamilia
         Else
@@ -393,6 +413,19 @@ Public Class UtentesScreen
 
         TBCodUtente.Focus()
 
+    End Sub
+
+    ' CBEstCivil/CBGenero only carry a fixed set of options (Designer.vb). A value
+    ' read back from the DB that doesn't exactly match one of them (legacy data,
+    ' a row inserted outside the app) used to leave SelectedItem at Nothing —
+    ' invisible to the user, and silently wiped on the next Gravar since Gravar
+    ' just re-reads SelectedItem. Add the unknown value as an extra option instead
+    ' of losing it.
+    Private Sub SetComboPreservingUnknown(ByVal cb As ComboBox, ByVal value As String)
+        If value <> String.Empty AndAlso Not cb.Items.Contains(value) Then
+            cb.Items.Add(value)
+        End If
+        cb.SelectedItem = value
     End Sub
 
 
@@ -447,15 +480,38 @@ Public Class UtentesScreen
         MsgBox(Message)
     End Sub
 
+    ' Image.FromFile/New Bitmap(path) keep the source file locked for as long as the
+    ' Image is in use. Load through a MemoryStream and clone so the file handle is
+    ' released immediately, and guard against a corrupt/unsupported file throwing.
+    Private Function LoadImageCopy(ByVal path As String) As Image
+        Using raw As New Bitmap(path)
+            Return New Bitmap(raw)
+        End Using
+    End Function
+
     Private Sub BtnFoto_Click(sender As Object, e As EventArgs) Handles BtnFoto.Click
         If OPDFoto.ShowDialog = DialogResult.OK Then
-            PBFoto.Image = Image.FromFile(OPDFoto.FileName)
+            Try
+                Dim novaFoto As Image = LoadImageCopy(OPDFoto.FileName)
+                Dim antiga As Image = PBFoto.Image
+                PBFoto.Image = novaFoto
+                If antiga IsNot Nothing AndAlso antiga IsNot My.Resources.Resource1.foto_default Then antiga.Dispose()
+            Catch ex As Exception
+                MsgBox("Não foi possível carregar a imagem: " & ex.Message)
+            End Try
         End If
     End Sub
 
     Private Sub BtnFotoAut_Click(sender As Object, e As EventArgs) Handles BtnFotoAut.Click
         If OPDFotoAut.ShowDialog = DialogResult.OK Then
-            PBFotoAut.Image = Image.FromFile(OPDFotoAut.FileName)
+            Try
+                Dim novaFoto As Image = LoadImageCopy(OPDFotoAut.FileName)
+                Dim antiga As Image = PBFotoAut.Image
+                PBFotoAut.Image = novaFoto
+                If antiga IsNot Nothing AndAlso antiga IsNot My.Resources.Resource1.foto_default Then antiga.Dispose()
+            Catch ex As Exception
+                MsgBox("Não foi possível carregar a imagem: " & ex.Message)
+            End Try
         End If
     End Sub
 
@@ -610,6 +666,7 @@ Public Class UtentesScreen
             setScreen("C")
             TBNome.Focus()
         Else
+            setScreen("I")
             MsgBox(Message)
         End If
 
@@ -674,15 +731,16 @@ Public Class UtentesScreen
             Return
         End If
 
-        Dim pd As New PrintDocument()
-        AddHandler pd.PrintPage, AddressOf DesenharCartaoUtente
+        Using pd As New PrintDocument()
+            AddHandler pd.PrintPage, AddressOf DesenharCartaoUtente
 
-        Using preview As New PrintPreviewDialog() With {
-            .Document = pd,
-            .Width = 650,
-            .Height = 750
-        }
-            preview.ShowDialog()
+            Using preview As New PrintPreviewDialog() With {
+                .Document = pd,
+                .Width = 650,
+                .Height = 750
+            }
+                preview.ShowDialog()
+            End Using
         End Using
     End Sub
 

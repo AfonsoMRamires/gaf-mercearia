@@ -7,6 +7,16 @@ Imports System.Data.SqlClient
 ''' </summary>
 Public Class Stock
 
+    ' Raised for the guarded-decrement "not enough stock" business rule, so callers
+    ' can tell it apart from a real DB/connection failure and skip logging it as an
+    ' error — it's an expected, user-facing rejection, not a fault.
+    Private Class StockInsuficienteException
+        Inherits Exception
+        Public Sub New(ByVal message As String)
+            MyBase.New(message)
+        End Sub
+    End Class
+
     ' ── Data objects ─────────────────────────────────────────────────────────
     Public Class ArtigoObj
         Public codArtigo As Integer = 0
@@ -313,7 +323,7 @@ Public Class Stock
                             cmd.Parameters.AddWithValue("@quantidade", e.quantidade)
                             cmd.Parameters.AddWithValue("@codArtigo", e.codArtigo)
                             If cmd.ExecuteNonQuery() = 0 Then
-                                Throw New Exception("Stock insuficiente para a quantidade indicada")
+                                Throw New StockInsuficienteException("Stock insuficiente para a quantidade indicada")
                             End If
                         End Using
 
@@ -336,6 +346,9 @@ Public Class Stock
             Message = "Entrega registada com sucesso"
             AppLogger.Info("RegistarEntrega", "Utente=" & e.codUtente & " Artigo=" & e.codArtigo & " Qtd=" & e.quantidade.ToString())
             Return True
+        Catch ex As StockInsuficienteException
+            Message = ex.Message
+            Return False
         Catch ex As Exception
             Message = "Erro Método RegistarEntrega: " & ex.Message
             AppLogger.Error("RegistarEntrega", ex)
@@ -375,7 +388,7 @@ Public Class Stock
                             cmd.Parameters.AddWithValue("@quantidade", s.quantidade)
                             cmd.Parameters.AddWithValue("@codArtigo", s.codArtigo)
                             If cmd.ExecuteNonQuery() = 0 Then
-                                Throw New Exception("Stock insuficiente para a quantidade indicada")
+                                Throw New StockInsuficienteException("Stock insuficiente para a quantidade indicada")
                             End If
                         End Using
 
@@ -389,6 +402,9 @@ Public Class Stock
             Message = "Saída de stock registada"
             AppLogger.Info("RegistarSaida", "Artigo=" & s.codArtigo & " Qtd=" & s.quantidade.ToString() & " Motivo=" & s.motivo)
             Return True
+        Catch ex As StockInsuficienteException
+            Message = ex.Message
+            Return False
         Catch ex As Exception
             Message = "Erro Método RegistarSaida: " & ex.Message
             AppLogger.Error("RegistarSaida", ex)

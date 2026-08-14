@@ -578,9 +578,11 @@ Partial Class UtentesScreen
         Me.TBNota.AcceptsReturn = True
         Me.TBNota.Location = New System.Drawing.Point(84, 18)
         Me.TBNota.Margin = New System.Windows.Forms.Padding(2)
-        Me.TBNota.MaxLength = 80
+        Me.TBNota.MaxLength = 1000
+        Me.TBNota.Multiline = True
+        Me.TBNota.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.TBNota.Name = "TBNota"
-        Me.TBNota.Size = New System.Drawing.Size(437, 21)
+        Me.TBNota.Size = New System.Drawing.Size(437, 34)
         Me.TBNota.TabIndex = 7
         '
         'Label17
