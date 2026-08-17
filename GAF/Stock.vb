@@ -315,16 +315,14 @@ Public Class Stock
                             cmd.ExecuteNonQuery()
                         End Using
 
-                        ' Guarded decrement: only succeeds if there is enough on-hand
-                        ' stock. Zero rows affected => insufficient stock => abort.
+                        ' Entrega = goods coming IN (from a supplier/donor), so this adds
+                        ' to on-hand stock - the opposite direction from RegistarSaida.
                         Using cmd As New SqlCommand(
-                            "UPDATE Artigos SET stockAtual = stockAtual - @quantidade " &
-                            "WHERE codArtigo = @codArtigo AND stockAtual >= @quantidade", conn, tx)
+                            "UPDATE Artigos SET stockAtual = stockAtual + @quantidade " &
+                            "WHERE codArtigo = @codArtigo", conn, tx)
                             cmd.Parameters.AddWithValue("@quantidade", e.quantidade)
                             cmd.Parameters.AddWithValue("@codArtigo", e.codArtigo)
-                            If cmd.ExecuteNonQuery() = 0 Then
-                                Throw New StockInsuficienteException("Stock insuficiente para a quantidade indicada")
-                            End If
+                            cmd.ExecuteNonQuery()
                         End Using
 
                         If temUtente Then
@@ -346,9 +344,6 @@ Public Class Stock
             Message = "Entrega registada com sucesso"
             AppLogger.Info("RegistarEntrega", "Utente=" & e.codUtente & " Artigo=" & e.codArtigo & " Qtd=" & e.quantidade.ToString())
             Return True
-        Catch ex As StockInsuficienteException
-            Message = ex.Message
-            Return False
         Catch ex As Exception
             Message = "Erro Método RegistarEntrega: " & ex.Message
             AppLogger.Error("RegistarEntrega", ex)
@@ -358,8 +353,8 @@ Public Class Stock
 
     ' ── Saídas de stock (sem entrega a Utente) ─────────────────────────────────
     ' Records stock leaving for a reason other than a delivery (perda, consumo
-    ' interno, correção de inventário, etc.). Same guarded-decrement pattern as
-    ' RegistarEntrega, just without the Utente side.
+    ' interno, correção de inventário, etc.). Guarded decrement, same shape as
+    ' RegistarEntrega's insert-then-update transaction but the opposite direction.
     Public Function RegistarSaida(ByVal s As SaidaObj, ByRef Message As String) As Boolean
         If s.codUtente.Trim() = String.Empty Then
             Message = "Código de utente é obrigatório numa Saída de Stock"
@@ -412,27 +407,38 @@ Public Class Stock
         End Try
     End Function
 
-    ' ── Histórico combinado (Entregas + Saídas atribuídas a este Utente) ───────
-    ' Both movement types for one Utente, tagged with Tipo so the caller can
-    ' filter by date / descrição / tipo over a single in-memory DataTable.
+    ' ── Histórico combinado (Entregas + Saídas) ─────────────────────────────────
+    ' Both movement types, tagged with Tipo so the caller can filter by date /
+    ' descrição / tipo over a single in-memory DataTable. A blank codUtente
+    ' returns movements for every Utente (with CodUtente/NomeUtente columns so
+    ' the caller can filter/sort/group by client); a non-blank codUtente scopes
+    ' the result to just that Utente, as before.
     Public Function GetHistoricoUtente(ByVal codUtente As String,
                                        ByRef returnCode As Boolean,
                                        ByRef Message As String) As DataTable
         Dim dt As New DataTable
+        Dim todos As Boolean = codUtente.Trim() = String.Empty
         Try
             Using conn As New SqlConnection(GAFDataBase.ConnectionString)
-                Using cmd As New SqlCommand(
+                Dim sql As String =
                     "SELECT 'Entrega' AS Tipo, e.dtEntrega AS Data, a.descricao AS Descricao, " &
-                    "a.unidade AS Unidade, e.quantidade AS Quantidade, e.obs AS Motivo, e.utilizador AS Utilizador " &
+                    "a.unidade AS Unidade, e.quantidade AS Quantidade, e.obs AS Motivo, e.utilizador AS Utilizador, " &
+                    "e.codUtente AS CodUtente, u.nome AS NomeUtente " &
                     "FROM Entregas e INNER JOIN Artigos a ON e.codArtigo = a.codArtigo " &
-                    "WHERE e.codUtente = @codUtente " &
+                    "LEFT JOIN Utentes u ON e.codUtente = u.codUtente "
+                If Not todos Then sql &= "WHERE e.codUtente = @codUtente "
+                sql &=
                     "UNION ALL " &
                     "SELECT 'Saída' AS Tipo, s.dtSaida AS Data, a.descricao AS Descricao, " &
-                    "a.unidade AS Unidade, s.quantidade AS Quantidade, s.motivo AS Motivo, s.utilizador AS Utilizador " &
+                    "a.unidade AS Unidade, s.quantidade AS Quantidade, s.motivo AS Motivo, s.utilizador AS Utilizador, " &
+                    "s.codUtente AS CodUtente, u.nome AS NomeUtente " &
                     "FROM SaidasStock s INNER JOIN Artigos a ON s.codArtigo = a.codArtigo " &
-                    "WHERE s.codUtente = @codUtente " &
-                    "ORDER BY Data DESC", conn)
-                    cmd.Parameters.AddWithValue("@codUtente", codUtente)
+                    "LEFT JOIN Utentes u ON s.codUtente = u.codUtente "
+                If Not todos Then sql &= "WHERE s.codUtente = @codUtente "
+                sql &= "ORDER BY Data DESC"
+
+                Using cmd As New SqlCommand(sql, conn)
+                    If Not todos Then cmd.Parameters.AddWithValue("@codUtente", codUtente)
                     conn.Open()
                     Using da As New SqlDataAdapter(cmd)
                         da.Fill(dt)

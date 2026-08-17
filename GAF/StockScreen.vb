@@ -100,8 +100,8 @@ Public Class StockScreen
     End Sub
 
     ' ── Histórico tab ────────────────────────────────────────────────────────────
-    ' Combined Entregas + Saídas (only the ones attributed to this Utente) for
-    ' the given codUtente. Resets the filter row on every fresh load.
+    ' Combined Entregas + Saídas for the given codUtente, or for every Utente
+    ' when codUtente is blank. Resets the filter row on every fresh load.
     Private Sub LoadHistorico(ByVal codUtente As String)
         If codUtente.Trim() = String.Empty Then Return
         Dim dt As DataTable = Stock.GetHistoricoUtente(codUtente, returnCode, Message)
@@ -117,13 +117,6 @@ Public Class StockScreen
         End If
     End Sub
 
-    ' DataView.RowFilter has its own expression syntax (not SQL): '*', '%' and '['
-    ' are wildcard/escape characters there, not just the quote we already handle.
-    ' Bracket-escape them so free-typed text can't break the filter expression.
-    Private Function EscapeRowFilterLiteral(ByVal s As String) As String
-        Return s.Replace("'", "''").Replace("[", "[[]").Replace("%", "[%]").Replace("*", "[*]")
-    End Function
-
     Private Sub ApplyHistoricoFilter()
         If historicoDt Is Nothing Then Return
 
@@ -138,7 +131,7 @@ Public Class StockScreen
             filters.Add("Descricao LIKE '%" & EscapeRowFilterLiteral(TBDescricaoHist.Text.Trim()) & "%'")
         End If
         If CBTipoHist.SelectedIndex > 0 Then
-            filters.Add("Tipo = '" & EscapeRowFilterLiteral(CBTipoHist.SelectedItem.ToString()) & "'")
+            filters.Add("Tipo = '" & Filtering.EscapeRowFilterLiteral(CBTipoHist.SelectedItem.ToString()) & "'")
         End If
 
         Dim dv As DataView = historicoDt.DefaultView
@@ -149,6 +142,9 @@ Public Class StockScreen
             dv.RowFilter = String.Empty
         End Try
         DGVHistorico.DataSource = dv
+        Filtering.SetColumnFillWeights(DGVHistorico, New Dictionary(Of String, Integer) From {
+            {"Tipo", 8}, {"Data", 10}, {"Descricao", 22}, {"Unidade", 6}, {"Quantidade", 8},
+            {"Motivo", 18}, {"Utilizador", 10}, {"CodUtente", 8}, {"NomeUtente", 14}})
     End Sub
 
     Private Sub BtnProcurarHist_Click(sender As Object, e As EventArgs) Handles BtnProcurarHist.Click

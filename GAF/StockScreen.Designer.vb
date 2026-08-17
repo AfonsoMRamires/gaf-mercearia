@@ -311,9 +311,14 @@ Partial Class StockScreen
         '
         'DGVHistorico
         '
+        Me.DGVHistorico.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.DGVHistorico.AllowUserToAddRows = False
         Me.DGVHistorico.AllowUserToDeleteRows = False
-        Me.DGVHistorico.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DGVHistorico.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DGVHistorico.ColumnHeadersHeight = 30
+        Me.DGVHistorico.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing
         Me.DGVHistorico.Location = New System.Drawing.Point(6, 85)
         Me.DGVHistorico.Name = "DGVHistorico"
         Me.DGVHistorico.ReadOnly = True
@@ -326,10 +331,12 @@ Partial Class StockScreen
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ClientSize = New System.Drawing.Size(884, 561)
         Me.Controls.Add(Me.TCStock)
         Me.Name = "StockScreen"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
+        Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         Me.Text = "Histórico / Saída de Stock"
         Me.TCStock.ResumeLayout(False)
         Me.TPSaida.ResumeLayout(False)
