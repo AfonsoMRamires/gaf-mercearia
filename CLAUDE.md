@@ -75,12 +75,15 @@ Three-layer split, all in the single `GAF` project:
 - All DB errors are caught, written to `Message`, and also logged via
   `AppLogger.Error(context, ex)`; the exception is swallowed, not rethrown.
 - Multi-statement writes that must be atomic use an explicit `SqlTransaction`
-  (see `Stock.RegistarEntrega`: insert delivery, decrement stock guarded by a
-  `WHERE stockAtual >= @quantidade` row-count check, update the client's
-  `ultimaEntrega` cache — all committed or rolled back together).
+  (see `Stock.RegistarEntrega`: insert delivery, add to on-hand stock, update the
+  client's `ultimaEntrega` cache — all committed or rolled back together). An
+  `Entrega` is stock coming **in** (from a supplier/donor, optionally earmarked
+  for a Utente) — the opposite direction from `Stock.RegistarSaida`, which is
+  stock going **out** and uses the guarded `WHERE stockAtual >= @quantidade`
+  decrement instead.
 - `Stock.ModArtigo` deliberately excludes `stockAtual` from its UPDATE — on-hand
-  quantity only moves through `EntradaStock` / `RegistarEntrega`, never through the
-  generic edit path.
+  quantity only moves through `EntradaStock` / `RegistarEntrega` (both increase)
+  and `RegistarSaida` (decreases), never through the generic edit path.
 - `Utentes.GetNewCodUtente` generates the next code (`U001`, `U002`, ... rolling
   into `A001`, `B001`, etc. after `999`) by ranking the letter prefix in a fixed
   sequence rather than a plain `MAX()`, since `MAX("U999") > MAX("A001")` lexically
@@ -112,6 +115,6 @@ anywhere; don't introduce a different logging mechanism.
   default), not an explicit `Sub Main` — `UtentesScreen` becomes the startup
   form via the `My Project` / `Application.myapp` settings, not code you'll
   find by grepping for `Application.Run`.
-- `Stock.vb` (435 lines) and `UtentesScreen.vb` (736 lines) are the largest
+- `Stock.vb` (~450 lines) and `UtentesScreen.vb` (~775 lines) are the largest
   and most-changed files — most stock/CRUD work and most UI work respectively
   lands there.

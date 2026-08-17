@@ -97,18 +97,40 @@ Partial Class UtentesScreen
         Me.BtnNavFicha = New System.Windows.Forms.ToolStripButton()
         Me.BtnNavTodosUtentes = New System.Windows.Forms.ToolStripButton()
         Me.BtnNavStock = New System.Windows.Forms.ToolStripButton()
+        Me.BtnNavHistoricoGlobal = New System.Windows.Forms.ToolStripButton()
         Me.PBFotoAut = New System.Windows.Forms.PictureBox()
         Me.PBFoto = New System.Windows.Forms.PictureBox()
         Me.PnlTodosUtentes = New System.Windows.Forms.Panel()
+        Me.PnlFiltroUtentes = New System.Windows.Forms.Panel()
+        Me.LblFiltroUtentes = New System.Windows.Forms.Label()
+        Me.TBFiltroUtentes = New System.Windows.Forms.TextBox()
         Me.DGVTodosUtentes = New System.Windows.Forms.DataGridView()
         Me.PnlStock = New System.Windows.Forms.Panel()
         Me.TCStockMain = New System.Windows.Forms.TabControl()
         Me.TPArtigosMain = New System.Windows.Forms.TabPage()
+        Me.PnlFiltroArtigos = New System.Windows.Forms.Panel()
+        Me.LblFiltroArtigos = New System.Windows.Forms.Label()
+        Me.TBFiltroArtigos = New System.Windows.Forms.TextBox()
         Me.DGVArtigosMain = New System.Windows.Forms.DataGridView()
         Me.PnlArtigoButtonsMain = New System.Windows.Forms.Panel()
         Me.BtnNovoArtigoMain = New System.Windows.Forms.Button()
         Me.BtnEntradaStockMain = New System.Windows.Forms.Button()
         Me.BtnEliminarArtigoMain = New System.Windows.Forms.Button()
+        Me.PnlHistoricoGlobal = New System.Windows.Forms.Panel()
+        Me.LblUtenteGlobal = New System.Windows.Forms.Label()
+        Me.TBUtenteGlobal = New System.Windows.Forms.TextBox()
+        Me.BtnProcurarGlobal = New System.Windows.Forms.Button()
+        Me.LblDataDeGlobal = New System.Windows.Forms.Label()
+        Me.DTPDataDeGlobal = New System.Windows.Forms.DateTimePicker()
+        Me.LblDataAteGlobal = New System.Windows.Forms.Label()
+        Me.DTPDataAteGlobal = New System.Windows.Forms.DateTimePicker()
+        Me.LblDescricaoGlobal = New System.Windows.Forms.Label()
+        Me.TBDescricaoGlobal = New System.Windows.Forms.TextBox()
+        Me.LblTipoGlobal = New System.Windows.Forms.Label()
+        Me.CBTipoGlobal = New System.Windows.Forms.ComboBox()
+        Me.BtnFiltrarGlobal = New System.Windows.Forms.Button()
+        Me.CBAgruparUtenteGlobal = New System.Windows.Forms.CheckBox()
+        Me.DGVHistoricoGlobal = New System.Windows.Forms.DataGridView()
         Me.TPEntregaMain = New System.Windows.Forms.TabPage()
         Me.LblCodUtenteEntregaMain = New System.Windows.Forms.Label()
         Me.TBCodUtenteEntregaMain = New System.Windows.Forms.TextBox()
@@ -137,6 +159,8 @@ Partial Class UtentesScreen
         Me.TPArtigosMain.SuspendLayout()
         CType(Me.DGVArtigosMain, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.PnlArtigoButtonsMain.SuspendLayout()
+        Me.PnlHistoricoGlobal.SuspendLayout()
+        CType(Me.DGVHistoricoGlobal, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TPEntregaMain.SuspendLayout()
         CType(Me.NUDQuantidadeEntregaMain, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PBFotoAut, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -147,8 +171,7 @@ Partial Class UtentesScreen
         '
         Me.TBCodUtente.AcceptsReturn = True
         Me.TBCodUtente.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBCodUtente.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TBCodUtente.Location = New System.Drawing.Point(147, 50)
+        Me.TBCodUtente.Location = New System.Drawing.Point(180, 50)
         Me.TBCodUtente.Margin = New System.Windows.Forms.Padding(2)
         Me.TBCodUtente.MaxLength = 4
         Me.TBCodUtente.Name = "TBCodUtente"
@@ -158,7 +181,6 @@ Partial Class UtentesScreen
         'LblCodUtente
         '
         Me.LblCodUtente.AutoSize = True
-        Me.LblCodUtente.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LblCodUtente.Location = New System.Drawing.Point(62, 55)
         Me.LblCodUtente.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.LblCodUtente.Name = "LblCodUtente"
@@ -201,11 +223,11 @@ Partial Class UtentesScreen
         '
         Me.TBMorada.AcceptsReturn = True
         Me.TBMorada.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBMorada.Location = New System.Drawing.Point(84, 18)
+        Me.TBMorada.Location = New System.Drawing.Point(140, 18)
         Me.TBMorada.Margin = New System.Windows.Forms.Padding(2)
         Me.TBMorada.MaxLength = 80
         Me.TBMorada.Name = "TBMorada"
-        Me.TBMorada.Size = New System.Drawing.Size(514, 21)
+        Me.TBMorada.Size = New System.Drawing.Size(700, 21)
         Me.TBMorada.TabIndex = 5
         '
         'Label2
@@ -232,7 +254,7 @@ Partial Class UtentesScreen
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(729, 22)
+        Me.Label3.Location = New System.Drawing.Point(981, 22)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(36, 13)
@@ -245,12 +267,11 @@ Partial Class UtentesScreen
         Me.TabControl1.Controls.Add(Me.TPAnotacoes)
         Me.TabControl1.Controls.Add(Me.TPAgregado)
         Me.TabControl1.Controls.Add(Me.TPOutrosDados)
-        Me.TabControl1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TabControl1.Location = New System.Drawing.Point(49, 187)
         Me.TabControl1.Margin = New System.Windows.Forms.Padding(2)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
-        Me.TabControl1.Size = New System.Drawing.Size(628, 218)
+        Me.TabControl1.Size = New System.Drawing.Size(880, 218)
         Me.TabControl1.TabIndex = 12
         '
         'TPDadosPessoais
@@ -281,12 +302,11 @@ Partial Class UtentesScreen
         Me.TPDadosPessoais.Controls.Add(Me.Label4)
         Me.TPDadosPessoais.Controls.Add(Me.TBMorada)
         Me.TPDadosPessoais.Controls.Add(Me.LblMorada)
-        Me.TPDadosPessoais.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TPDadosPessoais.Location = New System.Drawing.Point(4, 24)
         Me.TPDadosPessoais.Margin = New System.Windows.Forms.Padding(2)
         Me.TPDadosPessoais.Name = "TPDadosPessoais"
         Me.TPDadosPessoais.Padding = New System.Windows.Forms.Padding(2)
-        Me.TPDadosPessoais.Size = New System.Drawing.Size(620, 190)
+        Me.TPDadosPessoais.Size = New System.Drawing.Size(860, 190)
         Me.TPDadosPessoais.TabIndex = 1
         Me.TPDadosPessoais.Text = "Dados Pessoais"
         Me.TPDadosPessoais.UseVisualStyleBackColor = True
@@ -294,7 +314,7 @@ Partial Class UtentesScreen
         'TBDespesa
         '
         Me.TBDespesa.AcceptsReturn = True
-        Me.TBDespesa.Location = New System.Drawing.Point(270, 143)
+        Me.TBDespesa.Location = New System.Drawing.Point(430, 143)
         Me.TBDespesa.Margin = New System.Windows.Forms.Padding(2)
         Me.TBDespesa.MaxLength = 10
         Me.TBDespesa.Name = "TBDespesa"
@@ -304,7 +324,7 @@ Partial Class UtentesScreen
         'Label20
         '
         Me.Label20.AutoSize = True
-        Me.Label20.Location = New System.Drawing.Point(204, 146)
+        Me.Label20.Location = New System.Drawing.Point(310, 146)
         Me.Label20.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label20.Name = "Label20"
         Me.Label20.Size = New System.Drawing.Size(62, 15)
@@ -314,7 +334,7 @@ Partial Class UtentesScreen
         'TBReceita
         '
         Me.TBReceita.AcceptsReturn = True
-        Me.TBReceita.Location = New System.Drawing.Point(84, 143)
+        Me.TBReceita.Location = New System.Drawing.Point(140, 143)
         Me.TBReceita.Margin = New System.Windows.Forms.Padding(2)
         Me.TBReceita.MaxLength = 10
         Me.TBReceita.Name = "TBReceita"
@@ -333,28 +353,26 @@ Partial Class UtentesScreen
         '
         'CBGenero
         '
-        Me.CBGenero.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CBGenero.FormattingEnabled = True
         Me.CBGenero.Items.AddRange(New Object() {"", "Masculino", "Feminino"})
-        Me.CBGenero.Location = New System.Drawing.Point(506, 118)
+        Me.CBGenero.Location = New System.Drawing.Point(710, 118)
         Me.CBGenero.Name = "CBGenero"
-        Me.CBGenero.Size = New System.Drawing.Size(92, 21)
+        Me.CBGenero.Size = New System.Drawing.Size(110, 21)
         Me.CBGenero.TabIndex = 28
         '
         'CBEstCivil
         '
-        Me.CBEstCivil.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CBEstCivil.FormattingEnabled = True
         Me.CBEstCivil.Items.AddRange(New Object() {"", "Casado(a)", "Solteiro(a)", "Viúvo(a)", "Divorciado(a)", "Outro(a)"})
-        Me.CBEstCivil.Location = New System.Drawing.Point(84, 93)
+        Me.CBEstCivil.Location = New System.Drawing.Point(140, 93)
         Me.CBEstCivil.Name = "CBEstCivil"
-        Me.CBEstCivil.Size = New System.Drawing.Size(128, 21)
+        Me.CBEstCivil.Size = New System.Drawing.Size(150, 21)
         Me.CBEstCivil.TabIndex = 27
         '
         'Label14
         '
         Me.Label14.AutoSize = True
-        Me.Label14.Location = New System.Drawing.Point(453, 121)
+        Me.Label14.Location = New System.Drawing.Point(590, 121)
         Me.Label14.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(48, 15)
@@ -365,7 +383,7 @@ Partial Class UtentesScreen
         '
         Me.TBTelemovel.AcceptsReturn = True
         Me.TBTelemovel.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBTelemovel.Location = New System.Drawing.Point(470, 93)
+        Me.TBTelemovel.Location = New System.Drawing.Point(710, 93)
         Me.TBTelemovel.Margin = New System.Windows.Forms.Padding(2)
         Me.TBTelemovel.MaxLength = 15
         Me.TBTelemovel.Name = "TBTelemovel"
@@ -375,7 +393,7 @@ Partial Class UtentesScreen
         'Label13
         '
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(402, 96)
+        Me.Label13.Location = New System.Drawing.Point(590, 96)
         Me.Label13.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(64, 15)
@@ -386,7 +404,7 @@ Partial Class UtentesScreen
         '
         Me.TBTelefone.AcceptsReturn = True
         Me.TBTelefone.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBTelefone.Location = New System.Drawing.Point(270, 93)
+        Me.TBTelefone.Location = New System.Drawing.Point(430, 93)
         Me.TBTelefone.Margin = New System.Windows.Forms.Padding(2)
         Me.TBTelefone.MaxLength = 15
         Me.TBTelefone.Name = "TBTelefone"
@@ -396,7 +414,7 @@ Partial Class UtentesScreen
         'Label12
         '
         Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(216, 96)
+        Me.Label12.Location = New System.Drawing.Point(310, 96)
         Me.Label12.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label12.Name = "Label12"
         Me.Label12.Size = New System.Drawing.Size(55, 15)
@@ -406,7 +424,7 @@ Partial Class UtentesScreen
         'Label11
         '
         Me.Label11.AutoSize = True
-        Me.Label11.Location = New System.Drawing.Point(11, 96)
+        Me.Label11.Location = New System.Drawing.Point(14, 96)
         Me.Label11.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(70, 15)
@@ -416,7 +434,7 @@ Partial Class UtentesScreen
         'TBDataNasc
         '
         Me.TBDataNasc.AcceptsReturn = True
-        Me.TBDataNasc.Location = New System.Drawing.Point(84, 118)
+        Me.TBDataNasc.Location = New System.Drawing.Point(140, 118)
         Me.TBDataNasc.Margin = New System.Windows.Forms.Padding(2)
         Me.TBDataNasc.MaxLength = 10
         Me.TBDataNasc.Name = "TBDataNasc"
@@ -437,17 +455,17 @@ Partial Class UtentesScreen
         '
         Me.TBPais.AcceptsReturn = True
         Me.TBPais.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBPais.Location = New System.Drawing.Point(270, 118)
+        Me.TBPais.Location = New System.Drawing.Point(430, 118)
         Me.TBPais.Margin = New System.Windows.Forms.Padding(2)
         Me.TBPais.MaxLength = 50
         Me.TBPais.Name = "TBPais"
-        Me.TBPais.Size = New System.Drawing.Size(161, 21)
+        Me.TBPais.Size = New System.Drawing.Size(150, 21)
         Me.TBPais.TabIndex = 15
         '
         'Label8
         '
         Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(206, 121)
+        Me.Label8.Location = New System.Drawing.Point(310, 121)
         Me.Label8.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label8.Name = "Label8"
         Me.Label8.Size = New System.Drawing.Size(65, 15)
@@ -458,7 +476,7 @@ Partial Class UtentesScreen
         '
         Me.TBNiss.AcceptsReturn = True
         Me.TBNiss.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBNiss.Location = New System.Drawing.Point(470, 68)
+        Me.TBNiss.Location = New System.Drawing.Point(710, 68)
         Me.TBNiss.Margin = New System.Windows.Forms.Padding(2)
         Me.TBNiss.MaxLength = 11
         Me.TBNiss.Name = "TBNiss"
@@ -468,7 +486,7 @@ Partial Class UtentesScreen
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(431, 71)
+        Me.Label7.Location = New System.Drawing.Point(590, 71)
         Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(35, 15)
@@ -479,7 +497,7 @@ Partial Class UtentesScreen
         '
         Me.TBId.AcceptsReturn = True
         Me.TBId.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBId.Location = New System.Drawing.Point(270, 68)
+        Me.TBId.Location = New System.Drawing.Point(430, 68)
         Me.TBId.Margin = New System.Windows.Forms.Padding(2)
         Me.TBId.MaxLength = 15
         Me.TBId.Name = "TBId"
@@ -489,7 +507,7 @@ Partial Class UtentesScreen
         'Label6
         '
         Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(229, 71)
+        Me.Label6.Location = New System.Drawing.Point(310, 71)
         Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(37, 15)
@@ -500,7 +518,7 @@ Partial Class UtentesScreen
         '
         Me.TBNif.AcceptsReturn = True
         Me.TBNif.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBNif.Location = New System.Drawing.Point(84, 68)
+        Me.TBNif.Location = New System.Drawing.Point(140, 68)
         Me.TBNif.Margin = New System.Windows.Forms.Padding(2)
         Me.TBNif.MaxLength = 9
         Me.TBNif.Name = "TBNif"
@@ -521,11 +539,11 @@ Partial Class UtentesScreen
         '
         Me.TBComplemento.AcceptsReturn = True
         Me.TBComplemento.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
-        Me.TBComplemento.Location = New System.Drawing.Point(84, 43)
+        Me.TBComplemento.Location = New System.Drawing.Point(140, 43)
         Me.TBComplemento.Margin = New System.Windows.Forms.Padding(2)
         Me.TBComplemento.MaxLength = 80
         Me.TBComplemento.Name = "TBComplemento"
-        Me.TBComplemento.Size = New System.Drawing.Size(514, 21)
+        Me.TBComplemento.Size = New System.Drawing.Size(700, 21)
         Me.TBComplemento.TabIndex = 7
         '
         'Label4
@@ -565,10 +583,9 @@ Partial Class UtentesScreen
         '
         'BtnAddNota
         '
-        Me.BtnAddNota.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnAddNota.Location = New System.Drawing.Point(526, 18)
+        Me.BtnAddNota.Location = New System.Drawing.Point(495, 16)
         Me.BtnAddNota.Name = "BtnAddNota"
-        Me.BtnAddNota.Size = New System.Drawing.Size(72, 21)
+        Me.BtnAddNota.Size = New System.Drawing.Size(110, 28)
         Me.BtnAddNota.TabIndex = 9
         Me.BtnAddNota.Text = "Adicionar"
         Me.BtnAddNota.UseVisualStyleBackColor = True
@@ -582,7 +599,7 @@ Partial Class UtentesScreen
         Me.TBNota.Multiline = True
         Me.TBNota.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.TBNota.Name = "TBNota"
-        Me.TBNota.Size = New System.Drawing.Size(437, 34)
+        Me.TBNota.Size = New System.Drawing.Size(400, 34)
         Me.TBNota.TabIndex = 7
         '
         'Label17
@@ -618,6 +635,7 @@ Partial Class UtentesScreen
         'PnlTodosUtentes
         '
         Me.PnlTodosUtentes.Controls.Add(Me.DGVTodosUtentes)
+        Me.PnlTodosUtentes.Controls.Add(Me.PnlFiltroUtentes)
         Me.PnlTodosUtentes.Dock = System.Windows.Forms.DockStyle.Fill
         Me.PnlTodosUtentes.Location = New System.Drawing.Point(37, 0)
         Me.PnlTodosUtentes.Name = "PnlTodosUtentes"
@@ -626,11 +644,41 @@ Partial Class UtentesScreen
         Me.PnlTodosUtentes.TabIndex = 22
         Me.PnlTodosUtentes.Visible = False
         '
+        'PnlFiltroUtentes
+        '
+        Me.PnlFiltroUtentes.Controls.Add(Me.TBFiltroUtentes)
+        Me.PnlFiltroUtentes.Controls.Add(Me.LblFiltroUtentes)
+        Me.PnlFiltroUtentes.Dock = System.Windows.Forms.DockStyle.Top
+        Me.PnlFiltroUtentes.Location = New System.Drawing.Point(8, 8)
+        Me.PnlFiltroUtentes.Name = "PnlFiltroUtentes"
+        Me.PnlFiltroUtentes.Size = New System.Drawing.Size(879, 60)
+        Me.PnlFiltroUtentes.TabIndex = 1
+        '
+        'LblFiltroUtentes
+        '
+        Me.LblFiltroUtentes.AutoSize = True
+        Me.LblFiltroUtentes.Location = New System.Drawing.Point(3, 3)
+        Me.LblFiltroUtentes.Name = "LblFiltroUtentes"
+        Me.LblFiltroUtentes.Size = New System.Drawing.Size(180, 17)
+        Me.LblFiltroUtentes.TabIndex = 1
+        Me.LblFiltroUtentes.Text = "Pesquisar (nome ou código):"
+        '
+        'TBFiltroUtentes
+        '
+        Me.TBFiltroUtentes.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.TBFiltroUtentes.Location = New System.Drawing.Point(3, 26)
+        Me.TBFiltroUtentes.Name = "TBFiltroUtentes"
+        Me.TBFiltroUtentes.Size = New System.Drawing.Size(873, 27)
+        Me.TBFiltroUtentes.TabIndex = 2
+        '
         'DGVTodosUtentes
         '
         Me.DGVTodosUtentes.AllowUserToAddRows = False
         Me.DGVTodosUtentes.AllowUserToDeleteRows = False
-        Me.DGVTodosUtentes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DGVTodosUtentes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DGVTodosUtentes.ColumnHeadersHeight = 30
+        Me.DGVTodosUtentes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing
         Me.DGVTodosUtentes.Dock = System.Windows.Forms.DockStyle.Fill
         Me.DGVTodosUtentes.Location = New System.Drawing.Point(8, 8)
         Me.DGVTodosUtentes.MultiSelect = False
@@ -665,8 +713,9 @@ Partial Class UtentesScreen
         '
         'TPArtigosMain
         '
-        Me.TPArtigosMain.Controls.Add(Me.PnlArtigoButtonsMain)
         Me.TPArtigosMain.Controls.Add(Me.DGVArtigosMain)
+        Me.TPArtigosMain.Controls.Add(Me.PnlArtigoButtonsMain)
+        Me.TPArtigosMain.Controls.Add(Me.PnlFiltroArtigos)
         Me.TPArtigosMain.Location = New System.Drawing.Point(4, 24)
         Me.TPArtigosMain.Name = "TPArtigosMain"
         Me.TPArtigosMain.Size = New System.Drawing.Size(871, 485)
@@ -674,11 +723,41 @@ Partial Class UtentesScreen
         Me.TPArtigosMain.Text = "Artigos"
         Me.TPArtigosMain.UseVisualStyleBackColor = True
         '
+        'PnlFiltroArtigos
+        '
+        Me.PnlFiltroArtigos.Controls.Add(Me.TBFiltroArtigos)
+        Me.PnlFiltroArtigos.Controls.Add(Me.LblFiltroArtigos)
+        Me.PnlFiltroArtigos.Dock = System.Windows.Forms.DockStyle.Top
+        Me.PnlFiltroArtigos.Location = New System.Drawing.Point(0, 0)
+        Me.PnlFiltroArtigos.Name = "PnlFiltroArtigos"
+        Me.PnlFiltroArtigos.Size = New System.Drawing.Size(871, 60)
+        Me.PnlFiltroArtigos.TabIndex = 2
+        '
+        'LblFiltroArtigos
+        '
+        Me.LblFiltroArtigos.AutoSize = True
+        Me.LblFiltroArtigos.Location = New System.Drawing.Point(3, 3)
+        Me.LblFiltroArtigos.Name = "LblFiltroArtigos"
+        Me.LblFiltroArtigos.Size = New System.Drawing.Size(150, 17)
+        Me.LblFiltroArtigos.TabIndex = 2
+        Me.LblFiltroArtigos.Text = "Pesquisar artigo:"
+        '
+        'TBFiltroArtigos
+        '
+        Me.TBFiltroArtigos.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.TBFiltroArtigos.Location = New System.Drawing.Point(3, 26)
+        Me.TBFiltroArtigos.Name = "TBFiltroArtigos"
+        Me.TBFiltroArtigos.Size = New System.Drawing.Size(865, 27)
+        Me.TBFiltroArtigos.TabIndex = 3
+        '
         'DGVArtigosMain
         '
         Me.DGVArtigosMain.AllowUserToAddRows = False
         Me.DGVArtigosMain.AllowUserToDeleteRows = False
-        Me.DGVArtigosMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.DGVArtigosMain.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DGVArtigosMain.ColumnHeadersHeight = 30
+        Me.DGVArtigosMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing
         Me.DGVArtigosMain.Dock = System.Windows.Forms.DockStyle.Fill
         Me.DGVArtigosMain.Location = New System.Drawing.Point(8, 8)
         Me.DGVArtigosMain.MultiSelect = False
@@ -726,6 +805,166 @@ Partial Class UtentesScreen
         Me.BtnEliminarArtigoMain.TabIndex = 2
         Me.BtnEliminarArtigoMain.Text = "Eliminar"
         Me.BtnEliminarArtigoMain.UseVisualStyleBackColor = True
+        '
+        'PnlHistoricoGlobal
+        '
+        Me.PnlHistoricoGlobal.Controls.Add(Me.LblUtenteGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.TBUtenteGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.BtnProcurarGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.LblDataDeGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.DTPDataDeGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.LblDataAteGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.DTPDataAteGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.LblDescricaoGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.TBDescricaoGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.LblTipoGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.CBTipoGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.BtnFiltrarGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.CBAgruparUtenteGlobal)
+        Me.PnlHistoricoGlobal.Controls.Add(Me.DGVHistoricoGlobal)
+        Me.PnlHistoricoGlobal.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.PnlHistoricoGlobal.Location = New System.Drawing.Point(37, 0)
+        Me.PnlHistoricoGlobal.Name = "PnlHistoricoGlobal"
+        Me.PnlHistoricoGlobal.Padding = New System.Windows.Forms.Padding(8)
+        Me.PnlHistoricoGlobal.Size = New System.Drawing.Size(895, 529)
+        Me.PnlHistoricoGlobal.TabIndex = 24
+        Me.PnlHistoricoGlobal.Visible = False
+        '
+        'LblUtenteGlobal
+        '
+        Me.LblUtenteGlobal.AutoSize = True
+        Me.LblUtenteGlobal.Location = New System.Drawing.Point(20, 20)
+        Me.LblUtenteGlobal.Name = "LblUtenteGlobal"
+        Me.LblUtenteGlobal.Size = New System.Drawing.Size(174, 21)
+        Me.LblUtenteGlobal.TabIndex = 0
+        Me.LblUtenteGlobal.Text = "Utente (vazio = todos):"
+        '
+        'TBUtenteGlobal
+        '
+        Me.TBUtenteGlobal.Location = New System.Drawing.Point(210, 17)
+        Me.TBUtenteGlobal.Name = "TBUtenteGlobal"
+        Me.TBUtenteGlobal.Size = New System.Drawing.Size(110, 27)
+        Me.TBUtenteGlobal.TabIndex = 1
+        '
+        'BtnProcurarGlobal
+        '
+        Me.BtnProcurarGlobal.Location = New System.Drawing.Point(330, 15)
+        Me.BtnProcurarGlobal.Name = "BtnProcurarGlobal"
+        Me.BtnProcurarGlobal.Size = New System.Drawing.Size(100, 30)
+        Me.BtnProcurarGlobal.TabIndex = 2
+        Me.BtnProcurarGlobal.Text = "Procurar"
+        Me.BtnProcurarGlobal.UseVisualStyleBackColor = True
+        '
+        'LblDataDeGlobal
+        '
+        Me.LblDataDeGlobal.AutoSize = True
+        Me.LblDataDeGlobal.Location = New System.Drawing.Point(20, 65)
+        Me.LblDataDeGlobal.Name = "LblDataDeGlobal"
+        Me.LblDataDeGlobal.Size = New System.Drawing.Size(28, 21)
+        Me.LblDataDeGlobal.TabIndex = 3
+        Me.LblDataDeGlobal.Text = "De:"
+        '
+        'DTPDataDeGlobal
+        '
+        Me.DTPDataDeGlobal.Checked = False
+        Me.DTPDataDeGlobal.Format = System.Windows.Forms.DateTimePickerFormat.Short
+        Me.DTPDataDeGlobal.Location = New System.Drawing.Point(60, 62)
+        Me.DTPDataDeGlobal.Name = "DTPDataDeGlobal"
+        Me.DTPDataDeGlobal.ShowCheckBox = True
+        Me.DTPDataDeGlobal.Size = New System.Drawing.Size(140, 27)
+        Me.DTPDataDeGlobal.TabIndex = 4
+        '
+        'LblDataAteGlobal
+        '
+        Me.LblDataAteGlobal.AutoSize = True
+        Me.LblDataAteGlobal.Location = New System.Drawing.Point(212, 65)
+        Me.LblDataAteGlobal.Name = "LblDataAteGlobal"
+        Me.LblDataAteGlobal.Size = New System.Drawing.Size(32, 21)
+        Me.LblDataAteGlobal.TabIndex = 5
+        Me.LblDataAteGlobal.Text = "Até:"
+        '
+        'DTPDataAteGlobal
+        '
+        Me.DTPDataAteGlobal.Checked = False
+        Me.DTPDataAteGlobal.Format = System.Windows.Forms.DateTimePickerFormat.Short
+        Me.DTPDataAteGlobal.Location = New System.Drawing.Point(250, 62)
+        Me.DTPDataAteGlobal.Name = "DTPDataAteGlobal"
+        Me.DTPDataAteGlobal.ShowCheckBox = True
+        Me.DTPDataAteGlobal.Size = New System.Drawing.Size(140, 27)
+        Me.DTPDataAteGlobal.TabIndex = 6
+        '
+        'LblDescricaoGlobal
+        '
+        Me.LblDescricaoGlobal.AutoSize = True
+        Me.LblDescricaoGlobal.Location = New System.Drawing.Point(410, 65)
+        Me.LblDescricaoGlobal.Name = "LblDescricaoGlobal"
+        Me.LblDescricaoGlobal.Size = New System.Drawing.Size(120, 21)
+        Me.LblDescricaoGlobal.TabIndex = 7
+        Me.LblDescricaoGlobal.Text = "Artigo (descrição):"
+        '
+        'TBDescricaoGlobal
+        '
+        Me.TBDescricaoGlobal.Location = New System.Drawing.Point(580, 62)
+        Me.TBDescricaoGlobal.Name = "TBDescricaoGlobal"
+        Me.TBDescricaoGlobal.Size = New System.Drawing.Size(180, 27)
+        Me.TBDescricaoGlobal.TabIndex = 8
+        '
+        'LblTipoGlobal
+        '
+        Me.LblTipoGlobal.AutoSize = True
+        Me.LblTipoGlobal.Location = New System.Drawing.Point(770, 65)
+        Me.LblTipoGlobal.Name = "LblTipoGlobal"
+        Me.LblTipoGlobal.Size = New System.Drawing.Size(40, 21)
+        Me.LblTipoGlobal.TabIndex = 9
+        Me.LblTipoGlobal.Text = "Tipo:"
+        '
+        'CBTipoGlobal
+        '
+        Me.CBTipoGlobal.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CBTipoGlobal.FormattingEnabled = True
+        Me.CBTipoGlobal.Items.AddRange(New Object() {"Todos", "Entrega", "Saída"})
+        Me.CBTipoGlobal.Location = New System.Drawing.Point(815, 62)
+        Me.CBTipoGlobal.Name = "CBTipoGlobal"
+        Me.CBTipoGlobal.Size = New System.Drawing.Size(100, 27)
+        Me.CBTipoGlobal.TabIndex = 10
+        '
+        'BtnFiltrarGlobal
+        '
+        Me.BtnFiltrarGlobal.Location = New System.Drawing.Point(20, 100)
+        Me.BtnFiltrarGlobal.Name = "BtnFiltrarGlobal"
+        Me.BtnFiltrarGlobal.Size = New System.Drawing.Size(100, 30)
+        Me.BtnFiltrarGlobal.TabIndex = 11
+        Me.BtnFiltrarGlobal.Text = "Filtrar"
+        Me.BtnFiltrarGlobal.UseVisualStyleBackColor = True
+        '
+        'CBAgruparUtenteGlobal
+        '
+        Me.CBAgruparUtenteGlobal.AutoSize = True
+        Me.CBAgruparUtenteGlobal.Location = New System.Drawing.Point(140, 105)
+        Me.CBAgruparUtenteGlobal.Name = "CBAgruparUtenteGlobal"
+        Me.CBAgruparUtenteGlobal.Size = New System.Drawing.Size(180, 21)
+        Me.CBAgruparUtenteGlobal.TabIndex = 12
+        Me.CBAgruparUtenteGlobal.Text = "Agrupar por Utente"
+        Me.CBAgruparUtenteGlobal.UseVisualStyleBackColor = True
+        '
+        'DGVHistoricoGlobal
+        '
+        Me.DGVHistoricoGlobal.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.DGVHistoricoGlobal.AllowUserToAddRows = False
+        Me.DGVHistoricoGlobal.AllowUserToDeleteRows = False
+        Me.DGVHistoricoGlobal.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill
+        Me.DGVHistoricoGlobal.ColumnHeadersHeight = 30
+        Me.DGVHistoricoGlobal.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing
+        Me.DGVHistoricoGlobal.Location = New System.Drawing.Point(8, 140)
+        Me.DGVHistoricoGlobal.MultiSelect = False
+        Me.DGVHistoricoGlobal.Name = "DGVHistoricoGlobal"
+        Me.DGVHistoricoGlobal.ReadOnly = True
+        Me.DGVHistoricoGlobal.RowHeadersVisible = False
+        Me.DGVHistoricoGlobal.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.DGVHistoricoGlobal.Size = New System.Drawing.Size(879, 381)
+        Me.DGVHistoricoGlobal.TabIndex = 13
         '
         'TPEntregaMain
         '
@@ -867,10 +1106,9 @@ Partial Class UtentesScreen
         Me.GroupBox3.Controls.Add(Me.Label16)
         Me.GroupBox3.Controls.Add(Me.TBDtEntrada)
         Me.GroupBox3.Controls.Add(Me.Label15)
-        Me.GroupBox3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GroupBox3.Location = New System.Drawing.Point(691, 370)
+        Me.GroupBox3.Location = New System.Drawing.Point(943, 370)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Size = New System.Drawing.Size(230, 99)
+        Me.GroupBox3.Size = New System.Drawing.Size(270, 99)
         Me.GroupBox3.TabIndex = 30
         Me.GroupBox3.TabStop = False
         Me.GroupBox3.Text = "Registo GAF"
@@ -878,7 +1116,7 @@ Partial Class UtentesScreen
         'TBDtSaida
         '
         Me.TBDtSaida.AcceptsReturn = True
-        Me.TBDtSaida.Location = New System.Drawing.Point(106, 56)
+        Me.TBDtSaida.Location = New System.Drawing.Point(150, 56)
         Me.TBDtSaida.Margin = New System.Windows.Forms.Padding(2)
         Me.TBDtSaida.MaxLength = 10
         Me.TBDtSaida.Name = "TBDtSaida"
@@ -888,7 +1126,6 @@ Partial Class UtentesScreen
         'Label16
         '
         Me.Label16.AutoSize = True
-        Me.Label16.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label16.Location = New System.Drawing.Point(18, 59)
         Me.Label16.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label16.Name = "Label16"
@@ -899,7 +1136,7 @@ Partial Class UtentesScreen
         'TBDtEntrada
         '
         Me.TBDtEntrada.AcceptsReturn = True
-        Me.TBDtEntrada.Location = New System.Drawing.Point(106, 32)
+        Me.TBDtEntrada.Location = New System.Drawing.Point(150, 32)
         Me.TBDtEntrada.Margin = New System.Windows.Forms.Padding(2)
         Me.TBDtEntrada.MaxLength = 10
         Me.TBDtEntrada.Name = "TBDtEntrada"
@@ -909,7 +1146,6 @@ Partial Class UtentesScreen
         'Label15
         '
         Me.Label15.AutoSize = True
-        Me.Label15.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label15.Location = New System.Drawing.Point(18, 35)
         Me.Label15.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label15.Name = "Label15"
@@ -923,7 +1159,6 @@ Partial Class UtentesScreen
         Me.GBUtente.Controls.Add(Me.TBAutorizado)
         Me.GBUtente.Controls.Add(Me.Label1)
         Me.GBUtente.Controls.Add(Me.TBNome)
-        Me.GBUtente.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GBUtente.Location = New System.Drawing.Point(49, 75)
         Me.GBUtente.Margin = New System.Windows.Forms.Padding(2)
         Me.GBUtente.Name = "GBUtente"
@@ -935,7 +1170,7 @@ Partial Class UtentesScreen
         'Label10
         '
         Me.Label10.AutoSize = True
-        Me.Label10.Location = New System.Drawing.Point(836, 42)
+        Me.Label10.Location = New System.Drawing.Point(1088, 42)
         Me.Label10.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label10.Name = "Label10"
         Me.Label10.Size = New System.Drawing.Size(69, 13)
@@ -945,7 +1180,7 @@ Partial Class UtentesScreen
         'BtnFoto
         '
         Me.BtnFoto.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFoto.Location = New System.Drawing.Point(725, 172)
+        Me.BtnFoto.Location = New System.Drawing.Point(977, 172)
         Me.BtnFoto.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnFoto.Name = "BtnFoto"
         Me.BtnFoto.Size = New System.Drawing.Size(49, 20)
@@ -956,7 +1191,7 @@ Partial Class UtentesScreen
         'BtnFotoAut
         '
         Me.BtnFotoAut.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFotoAut.Location = New System.Drawing.Point(848, 172)
+        Me.BtnFotoAut.Location = New System.Drawing.Point(1100, 172)
         Me.BtnFotoAut.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnFotoAut.Name = "BtnFotoAut"
         Me.BtnFotoAut.Size = New System.Drawing.Size(49, 20)
@@ -971,13 +1206,12 @@ Partial Class UtentesScreen
         'GroupBox2
         '
         Me.GroupBox2.Controls.Add(Me.BtnVerStock)
-        Me.GroupBox2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GroupBox2.Location = New System.Drawing.Point(691, 211)
+        Me.GroupBox2.Location = New System.Drawing.Point(943, 211)
         Me.GroupBox2.Name = "GroupBox2"
         Me.GroupBox2.Size = New System.Drawing.Size(230, 144)
         Me.GroupBox2.TabIndex = 18
         Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Última Entrega"
+        Me.GroupBox2.Text = "Gerir"
         '
         'BtnVerStock
         '
@@ -993,7 +1227,7 @@ Partial Class UtentesScreen
         Me.TSBotoes.BackColor = System.Drawing.SystemColors.ButtonShadow
         Me.TSBotoes.Dock = System.Windows.Forms.DockStyle.Left
         Me.TSBotoes.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao, Me.ToolStripSeparator6, Me.BtnEliminarUtente, Me.ToolStripSeparator5, Me.BtnNavFicha, Me.BtnNavTodosUtentes, Me.BtnNavStock})
+        Me.TSBotoes.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BtnNovo, Me.ToolStripSeparator4, Me.BtnAlterar, Me.ToolStripSeparator1, Me.BtnGravar, Me.ToolStripSeparator2, Me.BtnLimpar, Me.ToolStripSeparator3, Me.BtnImprimirCartao, Me.ToolStripSeparator6, Me.BtnEliminarUtente, Me.ToolStripSeparator5, Me.BtnNavFicha, Me.BtnNavTodosUtentes, Me.BtnNavStock, Me.BtnNavHistoricoGlobal})
         Me.TSBotoes.Location = New System.Drawing.Point(0, 0)
         Me.TSBotoes.Name = "TSBotoes"
         Me.TSBotoes.Size = New System.Drawing.Size(37, 529)
@@ -1023,7 +1257,6 @@ Partial Class UtentesScreen
         'Label18
         '
         Me.Label18.AutoSize = True
-        Me.Label18.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label18.Location = New System.Drawing.Point(13, 22)
         Me.Label18.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label18.Name = "Label18"
@@ -1033,10 +1266,9 @@ Partial Class UtentesScreen
         '
         'CBTipoFamilia
         '
-        Me.CBTipoFamilia.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CBTipoFamilia.FormattingEnabled = True
         Me.CBTipoFamilia.Items.AddRange(New Object() {"", "Unipessoal", "Monoparental", "Nuclear", "Alargada", "Outro"})
-        Me.CBTipoFamilia.Location = New System.Drawing.Point(98, 19)
+        Me.CBTipoFamilia.Location = New System.Drawing.Point(180, 19)
         Me.CBTipoFamilia.Name = "CBTipoFamilia"
         Me.CBTipoFamilia.Size = New System.Drawing.Size(302, 23)
         Me.CBTipoFamilia.TabIndex = 29
@@ -1058,7 +1290,7 @@ Partial Class UtentesScreen
         'BtnPesquisarUtentes
         '
         Me.BtnPesquisarUtentes.Image = Global.GAF.My.Resources.Resource1.icons8_search_16
-        Me.BtnPesquisarUtentes.Location = New System.Drawing.Point(203, 50)
+        Me.BtnPesquisarUtentes.Location = New System.Drawing.Point(236, 50)
         Me.BtnPesquisarUtentes.Name = "BtnPesquisarUtentes"
         Me.BtnPesquisarUtentes.Size = New System.Drawing.Size(31, 21)
         Me.BtnPesquisarUtentes.TabIndex = 31
@@ -1164,12 +1396,22 @@ Partial Class UtentesScreen
         Me.BtnNavStock.Text = "Stock"
         Me.BtnNavStock.ToolTipText = "Stock"
         '
+        'BtnNavHistoricoGlobal
+        '
+        Me.BtnNavHistoricoGlobal.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.BtnNavHistoricoGlobal.Image = Global.GAF.My.Resources.Resource1.icons_histoy
+        Me.BtnNavHistoricoGlobal.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.BtnNavHistoricoGlobal.Name = "BtnNavHistoricoGlobal"
+        Me.BtnNavHistoricoGlobal.Size = New System.Drawing.Size(34, 36)
+        Me.BtnNavHistoricoGlobal.Text = "Histórico Global de Stock"
+        Me.BtnNavHistoricoGlobal.ToolTipText = "Histórico Global de Stock"
+        '
         'PBFotoAut
         '
         Me.PBFotoAut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.PBFotoAut.Image = Global.GAF.My.Resources.Resource1.foto_default
         Me.PBFotoAut.InitialImage = Global.GAF.My.Resources.Resource1.foto_default
-        Me.PBFotoAut.Location = New System.Drawing.Point(826, 57)
+        Me.PBFotoAut.Location = New System.Drawing.Point(1078, 57)
         Me.PBFotoAut.Margin = New System.Windows.Forms.Padding(2)
         Me.PBFotoAut.Name = "PBFotoAut"
         Me.PBFotoAut.Size = New System.Drawing.Size(95, 111)
@@ -1182,7 +1424,7 @@ Partial Class UtentesScreen
         Me.PBFoto.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.PBFoto.Image = Global.GAF.My.Resources.Resource1.foto_default
         Me.PBFoto.InitialImage = Global.GAF.My.Resources.Resource1.foto_default
-        Me.PBFoto.Location = New System.Drawing.Point(691, 37)
+        Me.PBFoto.Location = New System.Drawing.Point(943, 37)
         Me.PBFoto.Margin = New System.Windows.Forms.Padding(2)
         Me.PBFoto.Name = "PBFoto"
         Me.PBFoto.Size = New System.Drawing.Size(116, 131)
@@ -1194,7 +1436,8 @@ Partial Class UtentesScreen
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(932, 529)
+        Me.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ClientSize = New System.Drawing.Size(1240, 560)
         Me.Controls.Add(Me.BtnPesquisarUtentes)
         Me.Controls.Add(Me.GroupBox3)
         Me.Controls.Add(Me.GroupBox4)
@@ -1212,6 +1455,7 @@ Partial Class UtentesScreen
         Me.Controls.Add(Me.TBCodUtente)
         Me.Controls.Add(Me.PnlTodosUtentes)
         Me.Controls.Add(Me.PnlStock)
+        Me.Controls.Add(Me.PnlHistoricoGlobal)
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "UtentesScreen"
         Me.Text = "Utentes"
@@ -1236,6 +1480,9 @@ Partial Class UtentesScreen
         Me.TPArtigosMain.ResumeLayout(False)
         CType(Me.DGVArtigosMain, System.ComponentModel.ISupportInitialize).EndInit()
         Me.PnlArtigoButtonsMain.ResumeLayout(False)
+        Me.PnlHistoricoGlobal.ResumeLayout(False)
+        Me.PnlHistoricoGlobal.PerformLayout()
+        CType(Me.DGVHistoricoGlobal, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TPEntregaMain.ResumeLayout(False)
         Me.TPEntregaMain.PerformLayout()
         CType(Me.NUDQuantidadeEntregaMain, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1323,14 +1570,36 @@ Partial Class UtentesScreen
     Friend WithEvents BtnNavFicha As ToolStripButton
     Friend WithEvents BtnNavTodosUtentes As ToolStripButton
     Friend WithEvents BtnNavStock As ToolStripButton
+    Friend WithEvents BtnNavHistoricoGlobal As ToolStripButton
     Friend WithEvents PnlTodosUtentes As Panel
+    Friend WithEvents PnlFiltroUtentes As Panel
+    Friend WithEvents LblFiltroUtentes As Label
+    Friend WithEvents TBFiltroUtentes As TextBox
     Friend WithEvents DGVTodosUtentes As DataGridView
     Friend WithEvents PnlStock As Panel
+    Friend WithEvents PnlFiltroArtigos As Panel
+    Friend WithEvents LblFiltroArtigos As Label
+    Friend WithEvents TBFiltroArtigos As TextBox
     Friend WithEvents DGVArtigosMain As DataGridView
     Friend WithEvents PnlArtigoButtonsMain As Panel
     Friend WithEvents BtnNovoArtigoMain As Button
     Friend WithEvents BtnEntradaStockMain As Button
     Friend WithEvents BtnEliminarArtigoMain As Button
+    Friend WithEvents PnlHistoricoGlobal As Panel
+    Friend WithEvents LblUtenteGlobal As Label
+    Friend WithEvents TBUtenteGlobal As TextBox
+    Friend WithEvents BtnProcurarGlobal As Button
+    Friend WithEvents LblDataDeGlobal As Label
+    Friend WithEvents DTPDataDeGlobal As DateTimePicker
+    Friend WithEvents LblDataAteGlobal As Label
+    Friend WithEvents DTPDataAteGlobal As DateTimePicker
+    Friend WithEvents LblDescricaoGlobal As Label
+    Friend WithEvents TBDescricaoGlobal As TextBox
+    Friend WithEvents LblTipoGlobal As Label
+    Friend WithEvents CBTipoGlobal As ComboBox
+    Friend WithEvents BtnFiltrarGlobal As Button
+    Friend WithEvents CBAgruparUtenteGlobal As CheckBox
+    Friend WithEvents DGVHistoricoGlobal As DataGridView
     Friend WithEvents TCStockMain As TabControl
     Friend WithEvents TPArtigosMain As TabPage
     Friend WithEvents TPEntregaMain As TabPage

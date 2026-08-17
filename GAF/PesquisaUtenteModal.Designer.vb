@@ -46,7 +46,6 @@ Partial Class PesquisaUtenteModal
         Me.GBUtente.Controls.Add(Me.TBAutorizado)
         Me.GBUtente.Controls.Add(Me.Label1)
         Me.GBUtente.Controls.Add(Me.TBNome)
-        Me.GBUtente.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GBUtente.Location = New System.Drawing.Point(11, 11)
         Me.GBUtente.Margin = New System.Windows.Forms.Padding(2)
         Me.GBUtente.Name = "GBUtente"
@@ -171,6 +170,7 @@ Partial Class PesquisaUtenteModal
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ClientSize = New System.Drawing.Size(800, 450)
         Me.Controls.Add(Me.BtnSelecionar)
         Me.Controls.Add(Me.DGVUtentes)

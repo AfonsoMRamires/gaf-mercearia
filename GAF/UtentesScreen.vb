@@ -10,6 +10,15 @@ Public Class UtentesScreen
     Dim UtentesObj As Utentes.UtentesObj = New Utentes.UtentesObj
     Dim mode As Char = "I"
 
+    ' Full (unfiltered) rows for the "Todos os Utentes" / "Artigos" grids; filters
+    ' are applied over these via a DataView rather than re-querying the DB per keystroke.
+    Private todosUtentesDt As DataTable = Nothing
+    Private artigosMainDt As DataTable = Nothing
+
+    ' Same idea, for the Histórico Global de Stock overlay (every Utente's
+    ' Entregas + Saídas combined).
+    Private historicoGlobalDt As DataTable = Nothing
+
     Private Const EM_SETCUEBANNER As Integer = &H1501
 
     <System.Runtime.InteropServices.DllImport("user32.dll", CharSet:=System.Runtime.InteropServices.CharSet.Unicode)>
@@ -63,6 +72,7 @@ Public Class UtentesScreen
     Private Sub ShowFicha()
         PnlTodosUtentes.Visible = False
         PnlStock.Visible = False
+        PnlHistoricoGlobal.Visible = False
         SetFichaActionButtonsVisible(True)
     End Sub
 
@@ -73,8 +83,15 @@ Public Class UtentesScreen
     Private Sub BtnNavTodosUtentes_Click(sender As Object, e As EventArgs) Handles BtnNavTodosUtentes.Click
         LoadTodosUtentes()
         PnlStock.Visible = False
+        PnlHistoricoGlobal.Visible = False
         PnlTodosUtentes.Visible = True
         PnlTodosUtentes.BringToFront()
+        ' A panel that starts Visible=False never gets an initial Dock layout pass for
+        ' its (deeply nested) children, so newly-shown docked controls can render with
+        ' stale bounds until something forces a relayout - do that explicitly here.
+        PnlTodosUtentes.PerformLayout()
+        DGVTodosUtentes.PerformLayout()
+        DGVTodosUtentes.Refresh()
         SetFichaActionButtonsVisible(False)
     End Sub
 
@@ -82,19 +99,58 @@ Public Class UtentesScreen
         LoadArtigosMain()
         LoadArtigosEntregaComboMain()
         PnlTodosUtentes.Visible = False
+        PnlHistoricoGlobal.Visible = False
         PnlStock.Visible = True
         PnlStock.BringToFront()
+        PnlStock.PerformLayout()
+        TCStockMain.PerformLayout()
+        DGVArtigosMain.PerformLayout()
+        DGVArtigosMain.Refresh()
         SetFichaActionButtonsVisible(False)
+    End Sub
+
+    Private Sub BtnNavHistoricoGlobal_Click(sender As Object, e As EventArgs) Handles BtnNavHistoricoGlobal.Click
+        PnlTodosUtentes.Visible = False
+        PnlStock.Visible = False
+        PnlHistoricoGlobal.Visible = True
+        PnlHistoricoGlobal.BringToFront()
+        PnlHistoricoGlobal.PerformLayout()
+        DGVHistoricoGlobal.PerformLayout()
+        DGVHistoricoGlobal.Refresh()
+        SetFichaActionButtonsVisible(False)
+        TBUtenteGlobal.Text = String.Empty
+        LoadHistoricoGlobal(String.Empty)
     End Sub
 
     ' ── Todos os Utentes overlay ──────────────────────────────────────────────────
     Private Sub LoadTodosUtentes()
         Dim dt As DataTable = Utentes.GetAllUtentes(returnCode, Message)
         If returnCode Then
-            DGVTodosUtentes.DataSource = dt
+            todosUtentesDt = dt
+            TBFiltroUtentes.Text = String.Empty
+            ApplyFiltroUtentes()
         Else
             MsgBox(Message)
         End If
+    End Sub
+
+    Private Sub ApplyFiltroUtentes()
+        If todosUtentesDt Is Nothing Then Return
+        Dim dv As DataView = todosUtentesDt.DefaultView
+        Dim texto As String = TBFiltroUtentes.Text.Trim()
+        If texto = String.Empty Then
+            dv.RowFilter = String.Empty
+        Else
+            Dim termo As String = Filtering.EscapeRowFilterLiteral(texto)
+            dv.RowFilter = "nome LIKE '%" & termo & "%' OR codUtente LIKE '%" & termo & "%'"
+        End If
+        DGVTodosUtentes.DataSource = dv
+        Filtering.SetColumnFillWeights(DGVTodosUtentes, New Dictionary(Of String, Integer) From {
+            {"codUtente", 8}, {"nome", 35}, {"autorizado", 35}, {"ativo", 8}})
+    End Sub
+
+    Private Sub TBFiltroUtentes_TextChanged(sender As Object, e As EventArgs) Handles TBFiltroUtentes.TextChanged
+        ApplyFiltroUtentes()
     End Sub
 
     Private Sub DGVTodosUtentes_DoubleClick(sender As Object, e As EventArgs) Handles DGVTodosUtentes.DoubleClick
@@ -108,11 +164,96 @@ Public Class UtentesScreen
     Private Sub LoadArtigosMain()
         Dim dt As DataTable = Stock.GetArtigos(returnCode, Message)
         If returnCode Then
-            DGVArtigosMain.DataSource = dt
-            HighlightLowStockMain()
+            artigosMainDt = dt
+            TBFiltroArtigos.Text = String.Empty
+            ApplyFiltroArtigos()
         Else
             MsgBox(Message)
         End If
+    End Sub
+
+    Private Sub ApplyFiltroArtigos()
+        If artigosMainDt Is Nothing Then Return
+        Dim dv As DataView = artigosMainDt.DefaultView
+        Dim texto As String = TBFiltroArtigos.Text.Trim()
+        If texto = String.Empty Then
+            dv.RowFilter = String.Empty
+        Else
+            dv.RowFilter = "descricao LIKE '%" & Filtering.EscapeRowFilterLiteral(texto) & "%'"
+        End If
+        DGVArtigosMain.DataSource = dv
+        Filtering.SetColumnFillWeights(DGVArtigosMain, New Dictionary(Of String, Integer) From {
+            {"codArtigo", 8}, {"descricao", 16}, {"unidade", 8},
+            {"stockAtual", 12}, {"stockMinimo", 12}, {"ativo", 8}, {"obs", 36}})
+        HighlightLowStockMain()
+    End Sub
+
+    Private Sub TBFiltroArtigos_TextChanged(sender As Object, e As EventArgs) Handles TBFiltroArtigos.TextChanged
+        ApplyFiltroArtigos()
+    End Sub
+
+    ' ── Histórico Global de Stock overlay ───────────────────────────────────────
+    ' Cross-Utente query surface: which client took what, when - filterable by
+    ' Utente (blank = todos), date range, artigo and tipo, optionally grouped by
+    ' Utente. Reuses Stock.GetHistoricoUtente, which already supports a blank
+    ' codUtente meaning "every Utente".
+    Private Sub LoadHistoricoGlobal(ByVal codUtente As String)
+        Dim dt As DataTable = Stock.GetHistoricoUtente(codUtente, returnCode, Message)
+        If returnCode Then
+            historicoGlobalDt = dt
+            DTPDataDeGlobal.Checked = False
+            DTPDataAteGlobal.Checked = False
+            TBDescricaoGlobal.Text = String.Empty
+            CBTipoGlobal.SelectedIndex = 0
+            ApplyHistoricoGlobalFilter()
+        Else
+            MsgBox(Message)
+        End If
+    End Sub
+
+    Private Sub ApplyHistoricoGlobalFilter()
+        If historicoGlobalDt Is Nothing Then Return
+
+        Dim filters As New List(Of String)
+        If DTPDataDeGlobal.Checked Then
+            filters.Add("Data >= #" & DTPDataDeGlobal.Value.ToString("MM/dd/yyyy") & "#")
+        End If
+        If DTPDataAteGlobal.Checked Then
+            filters.Add("Data <= #" & DTPDataAteGlobal.Value.ToString("MM/dd/yyyy") & "#")
+        End If
+        If TBDescricaoGlobal.Text.Trim() <> String.Empty Then
+            filters.Add("Descricao LIKE '%" & Filtering.EscapeRowFilterLiteral(TBDescricaoGlobal.Text.Trim()) & "%'")
+        End If
+        If CBTipoGlobal.SelectedIndex > 0 Then
+            filters.Add("Tipo = '" & Filtering.EscapeRowFilterLiteral(CBTipoGlobal.SelectedItem.ToString()) & "'")
+        End If
+
+        Dim dv As DataView = historicoGlobalDt.DefaultView
+        Try
+            dv.RowFilter = String.Join(" AND ", filters)
+        Catch ex As Exception
+            MsgBox("Filtro inválido: " & ex.Message)
+            dv.RowFilter = String.Empty
+        End Try
+        ' "Agrupar por Utente" clusters rows by client name (DataGridView has no
+        ' native row-grouping); unchecked keeps the query's natural Data DESC order.
+        dv.Sort = If(CBAgruparUtenteGlobal.Checked, "NomeUtente ASC, Data DESC", String.Empty)
+        DGVHistoricoGlobal.DataSource = dv
+        Filtering.SetColumnFillWeights(DGVHistoricoGlobal, New Dictionary(Of String, Integer) From {
+            {"Tipo", 8}, {"Data", 10}, {"Descricao", 22}, {"Unidade", 6}, {"Quantidade", 8},
+            {"Motivo", 18}, {"Utilizador", 10}, {"CodUtente", 8}, {"NomeUtente", 14}})
+    End Sub
+
+    Private Sub BtnProcurarGlobal_Click(sender As Object, e As EventArgs) Handles BtnProcurarGlobal.Click
+        LoadHistoricoGlobal(TBUtenteGlobal.Text)
+    End Sub
+
+    Private Sub BtnFiltrarGlobal_Click(sender As Object, e As EventArgs) Handles BtnFiltrarGlobal.Click
+        ApplyHistoricoGlobalFilter()
+    End Sub
+
+    Private Sub CBAgruparUtenteGlobal_CheckedChanged(sender As Object, e As EventArgs) Handles CBAgruparUtenteGlobal.CheckedChanged
+        ApplyHistoricoGlobalFilter()
     End Sub
 
     Private Sub HighlightLowStockMain()

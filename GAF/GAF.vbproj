@@ -109,6 +109,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GAFDataBase.vb" />
+    <Compile Include="Filtering.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -190,6 +191,7 @@
     <None Include="Resources\icons8-save-48.png" />
     <None Include="Resources\foto_default.png" />
     <None Include="Resources\icons-trash-can.png" />
+    <None Include="Resources\icons-history.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
