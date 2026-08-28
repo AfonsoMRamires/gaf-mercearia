@@ -1,0 +1,15 @@
+---
+GAF migration status: Installing GAF on target PC (git now there, build-from-source planned) + migrating data from old first-version-schema DB.
+
+Plan: clear dev-PC's local SQLEXPRESS GAF DB (test data only, disposable) → get old DB file onto dev PC → migrate old data into dev-PC's GAF (current schema) → verify → BACKUP DATABASE → copy .bak to target PC → RESTORE DATABASE there.
+
+Landmine: Utentes.AddUtente in GAF/Utentes.vb does positional INSERT INTO Utentes VALUES(...), no column list — physical column order must match code exactly. Old DB missing some columns. Do NOT ALTER TABLE ADD (appends at end, desyncs order, corrupts data). Safe fix: rename old table → Utentes_Legacy, create fresh Utentes in exact target order (see RUN.md / Utentes.vb AddUtente column list), INSERT INTO Utentes (explicit cols) SELECT (explicit cols, NULL for missing) FROM Utentes_Legacy. Keep Utentes_Legacy as backup.
+
+Blocked on, unresolved:
+1. Exact old Utentes column list — need this run against old DB, paste output:
+SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, ORDINAL_POSITION
+FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Utentes' ORDER BY ORDINAL_POSITION;
+2. Old DB file transfer — tried zipping "whole old app + docs", too large, method unstated. Unresolved: only the actual .mdf/.bak needed (not whole app), and whether old PC + target PC are on same LAN (could skip file transfer, go straight backup/restore or remote attach).
+3. Never confirmed what's literally inside that zip (.mdf+.ldf? nothing DB-related at all?).
+
+Repo: https://github.com/AfonsoMRamires/gaf-mercearia.git. No third-party deps — build output is just GAF.exe+GAF.exe.config. App.config hardcodes DB name GAF on .\SQLEXPRESS. App auto-creates everything except Utentes on startup.
