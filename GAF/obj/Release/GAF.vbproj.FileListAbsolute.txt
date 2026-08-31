@@ -1,0 +1,15 @@
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\bin\Release\GAF.exe.config
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\bin\Release\GAF.exe
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\bin\Release\GAF.pdb
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\bin\Release\GAF.xml
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.PesquisaUtenteModal.resources
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.Resource1.resources
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.UtentesScreen.resources
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.Resources.resources
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.vbproj.GenerateResource.cache
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.exe
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.xml
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.pdb
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.vbproj.AssemblyReference.cache
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.exe.config
+C:\Users\AfonsoRamires\Documents\gaf-mercearia\GAF\obj\Release\GAF.vbproj.CoreCompileInputs.cache
